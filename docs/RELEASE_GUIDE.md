@@ -485,7 +485,7 @@ README 顶部目前包括：
 当前代码在两个 README 的 `## Star History` 小节：
 
 ```markdown
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date&legend=top-left)](https://www.star-history.com/?repos=hhhSyyyShhh%2FPinyinTab&type=date&legend=top-left)
 ```
 
 它从 GitHub 的公开 Star 数据自动生成，不需要自己写后端、HTML 或数据库。新仓库没有 Star 时曲线为空是正常现象。

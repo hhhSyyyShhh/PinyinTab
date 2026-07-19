@@ -171,7 +171,7 @@ The `demo-source` directory contains Chinese-named examples for Python, Java, Ju
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date&legend=top-left)](https://www.star-history.com/?repos=hhhSyyyShhh%2FPinyinTab&type=date&legend=top-left)
 
 The chart becomes active after the repository owner placeholder is configured and the public GitHub repository exists.
 

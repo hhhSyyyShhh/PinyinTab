@@ -171,7 +171,7 @@ cargo build --release --locked
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date&legend=top-left)](https://www.star-history.com/?repos=hhhSyyyShhh%2FPinyinTab&type=date&legend=top-left)
 
 创建公开 GitHub 仓库并配置仓库所有者以后，Star History 曲线才会开始产生数据。
 
