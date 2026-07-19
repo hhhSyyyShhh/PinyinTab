@@ -1,0 +1,9 @@
+/target/
+/dist/
+.DS_Store
+.zcompdump*
+*.log
+*.tmp
+demo-source/*.class
+demo-source/*.o
+demo-source/*.out

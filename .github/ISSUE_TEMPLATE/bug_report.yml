@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible completion, installation, or compatibility problem.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve PinyinTab. Please remove sensitive path names before posting logs.
+  - type: input
+    id: version
+    attributes:
+      label: PinyinTab version
+      placeholder: Output of ptab version
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux x86_64 / Bash
+        - macOS arm64 / Zsh
+        - Other (currently unsupported)
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Diagnostics
+      description: Paste the output of `ptab doctor`.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include the real Chinese name, what you typed, and what Tab produced.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
