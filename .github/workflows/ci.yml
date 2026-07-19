@@ -23,7 +23,7 @@ jobs:
             shell_test: ./scripts/test-macos.zsh
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Show runner architecture
         run: uname -a
       - name: Install stable Rust
@@ -34,10 +34,11 @@ jobs:
         run: cargo test --locked --all-targets
       - name: Release build
         run: cargo build --release --locked
-      - name: Shell syntax
-        run: |
-          bash -n install.sh uninstall.sh shell/pinyintab.bash scripts/*.sh
-          zsh -n shell/pinyintab.zsh scripts/test-macos.zsh
+      - name: Bash syntax
+        run: bash -n install.sh uninstall.sh shell/pinyintab.bash scripts/*.sh
+      - name: Zsh syntax
+        if: runner.os == 'macOS'
+        run: zsh -n shell/pinyintab.zsh scripts/test-macos.zsh
       - name: Completion integration tests
         env:
           PINYINTAB_BINARY: ${{ github.workspace }}/target/release/ptab
@@ -47,7 +48,7 @@ jobs:
     name: Rust formatting and lints
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install stable Rust
         run: |
           rustup update stable

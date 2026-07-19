@@ -23,7 +23,7 @@ jobs:
             asset: macOS Apple Silicon
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Rust target
         run: |
           rustup update stable
@@ -33,7 +33,7 @@ jobs:
         run: cargo test --locked
       - name: Build release archive
         run: ./scripts/package-release.sh "${{ matrix.target }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}
           path: |
@@ -46,7 +46,8 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
         with:
           path: release-assets
           merge-multiple: true
