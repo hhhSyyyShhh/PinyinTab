@@ -142,7 +142,7 @@ PinyinTab interacts with interpreters only indirectly: it completes the path bef
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Compatibility boundary](docs/COMPATIBILITY.md)
-- [Release and versioning guide](docs/RELEASE_GUIDE.md)
+- [Maintainer, Git, README, Star History, and release guide (Chinese)](docs/RELEASE_GUIDE.md)
 - [Competitive analysis and common criteria](docs/COMPETITOR_ANALYSIS.md)
 - [Bug history and regression coverage](docs/BUG_REPORT.md)
 - [Technical stack introduction (Chinese)](docs/技术栈与实现说明.md)
