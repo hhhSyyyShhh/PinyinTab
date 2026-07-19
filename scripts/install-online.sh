@@ -2,9 +2,9 @@
 set -euo pipefail
 
 repository="${PINYINTAB_REPOSITORY:-hhhSyyyShhh/pinyintab}"
-if [[ "$repository" == hhhSyyyShhh/* ]]; then
-    echo "error: repository owner has not been configured yet" >&2
-    echo "Maintainer: run ./scripts/configure-repository.sh <github-user-or-org> first." >&2
+if [[ ! "$repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+    echo "error: invalid GitHub repository: $repository" >&2
+    echo "expected format: owner/repository" >&2
     exit 1
 fi
 

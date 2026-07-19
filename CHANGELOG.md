@@ -4,6 +4,15 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the online installer incorrectly rejecting the configured GitHub repository owner.
+- Made the repository-owner configuration script reusable after the initial setup.
+
+### Documentation
+
+- Expanded the maintainer guide with the complete Git, README, Star History, license, CI, packaging, and release workflow.
+
 ### Planned
 
 - Configurable polyphonic phrase dictionary.
