@@ -2,7 +2,7 @@
 
 这是一份写给项目维护者的中文 README。以后无论是修 Bug、增加功能、修改文档、更新 GitHub 首页，还是发布新版本，都可以从这里开始。
 
-当前正式仓库：<https://github.com/hhhSyyyShhh/pinyintab>
+当前正式仓库：<https://github.com/hhhSyyyShhh/PinyinTab>
 
 当前主分支：`main`
 
@@ -105,7 +105,7 @@ PinyinTab 首次建仓时采用以下配置：
 - Visibility：Public
 - 默认分支：`main`
 - 没有让 GitHub 自动生成 README、`.gitignore` 或 License，因为本地已经有这些文件
-- Remote：`https://github.com/hhhSyyyShhh/pinyintab.git`
+- Remote：`https://github.com/hhhSyyyShhh/PinyinTab.git`
 
 本地初始化的核心命令是：
 
@@ -114,7 +114,7 @@ git init
 git branch -M main
 git add .
 git commit -m "feat: prepare PinyinTab v0.3.0"
-git remote add origin https://github.com/hhhSyyyShhh/pinyintab.git
+git remote add origin https://github.com/hhhSyyyShhh/PinyinTab.git
 git push -u origin main
 ```
 
@@ -485,7 +485,7 @@ README 顶部目前包括：
 当前代码在两个 README 的 `## Star History` 小节：
 
 ```markdown
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/pinyintab&type=Date)](https://star-history.com/#hhhSyyyShhh/pinyintab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
 ```
 
 它从 GitHub 的公开 Star 数据自动生成，不需要自己写后端、HTML 或数据库。新仓库没有 Star 时曲线为空是正常现象。
@@ -718,4 +718,4 @@ git tag -a v0.3.1 -m "PinyinTab v0.3.1"
 git push origin v0.3.1
 ```
 
-发布完成后，进入 <https://github.com/hhhSyyyShhh/pinyintab/releases> 检查安装包，并在真实系统重新走一遍安装、补全、关闭和卸载流程。
+发布完成后，进入 <https://github.com/hhhSyyyShhh/PinyinTab/releases> 检查安装包，并在真实系统重新走一遍安装、补全、关闭和卸载流程。

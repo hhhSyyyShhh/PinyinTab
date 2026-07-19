@@ -8,8 +8,8 @@ Type Pinyin in Bash or Zsh, press <kbd>Tab</kbd>, and get the real Chinese path.
 
 [简体中文](README.zh-CN.md) · [Installation](#installation) · [Compatibility](#compatibility) · [Documentation](#documentation)
 
-[![CI](https://github.com/hhhSyyyShhh/pinyintab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/pinyintab/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/pinyintab?display_name=tag)](https://github.com/hhhSyyyShhh/pinyintab/releases)
+[![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/PinyinTab?display_name=tag)](https://github.com/hhhSyyyShhh/PinyinTab/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20macOS%20arm64-lightgrey)](#compatibility)
 
@@ -49,14 +49,14 @@ The installer needs no Rust toolchain and installs only for the current user.
 
 ```bash
 curl --proto '=https' --tlsv1.2 -fsSLO \
-  https://raw.githubusercontent.com/hhhSyyyShhh/pinyintab/main/scripts/install-online.sh
+  https://raw.githubusercontent.com/hhhSyyyShhh/PinyinTab/main/scripts/install-online.sh
 less install-online.sh
 bash install-online.sh
 ```
 
 Restart the terminal, or reload the shell configuration shown by the installer. PinyinTab starts automatically in new terminals.
 
-You can also download the matching archive from [GitHub Releases](https://github.com/hhhSyyyShhh/pinyintab/releases), verify its `.sha256` file, extract it, and run:
+You can also download the matching archive from [GitHub Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify its `.sha256` file, extract it, and run:
 
 ```bash
 ./install.sh
@@ -67,7 +67,7 @@ You can also download the matching archive from [GitHub Releases](https://github
 Rust 1.66 or newer is required only for a source installation:
 
 ```bash
-git clone https://github.com/hhhSyyyShhh/pinyintab.git
+git clone https://github.com/hhhSyyyShhh/PinyinTab.git
 cd pinyintab
 ./scripts/install-from-source.sh
 ```
@@ -171,7 +171,7 @@ The `demo-source` directory contains Chinese-named examples for Python, Java, Ju
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/pinyintab&type=Date)](https://star-history.com/#hhhSyyyShhh/pinyintab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
 
 The chart becomes active after the repository owner placeholder is configured and the public GitHub repository exists.
 

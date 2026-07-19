@@ -8,7 +8,7 @@ if [[ ! "$owner" =~ ^[A-Za-z0-9_.-]+$ ]]; then
 fi
 
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-current_owner="$(sed -n 's|^repository = "https://github.com/\([^/]*\)/pinyintab"|\1|p' "$project_dir/Cargo.toml" | head -n 1)"
+current_owner="$(sed -n 's|^repository = "https://github.com/\([^/]*\)/[^\"]*"|\1|p' "$project_dir/Cargo.toml" | head -n 1)"
 if [[ -z "$current_owner" ]]; then
     echo "error: could not determine the current GitHub owner from Cargo.toml" >&2
     exit 1
@@ -30,4 +30,4 @@ for file in "${files[@]}"; do
     ' "$file"
 done
 
-echo "Repository references configured for: $owner/pinyintab"
+echo "Repository references configured for: $owner/PinyinTab"

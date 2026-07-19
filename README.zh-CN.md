@@ -8,8 +8,8 @@
 
 [English](README.md) · [安装](#安装) · [兼容范围](#兼容范围) · [项目文档](#项目文档)
 
-[![CI](https://github.com/hhhSyyyShhh/pinyintab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/pinyintab/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/pinyintab?display_name=tag)](https://github.com/hhhSyyyShhh/pinyintab/releases)
+[![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/PinyinTab?display_name=tag)](https://github.com/hhhSyyyShhh/PinyinTab/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20macOS%20arm64-lightgrey)](#兼容范围)
 
@@ -49,14 +49,14 @@ python3 九九cf<Tab>                 → python3 九九乘法表.py
 
 ```bash
 curl --proto '=https' --tlsv1.2 -fsSLO \
-  https://raw.githubusercontent.com/hhhSyyyShhh/pinyintab/main/scripts/install-online.sh
+  https://raw.githubusercontent.com/hhhSyyyShhh/PinyinTab/main/scripts/install-online.sh
 less install-online.sh
 bash install-online.sh
 ```
 
 安装后重新打开终端，或者按照安装器提示重新加载 Shell 配置。以后打开新终端时 PinyinTab 会自动启用。
 
-也可以从 [GitHub Releases](https://github.com/hhhSyyyShhh/pinyintab/releases) 手动下载与系统对应的压缩包，验证 `.sha256` 文件，解压后运行：
+也可以从 [GitHub Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases) 手动下载与系统对应的压缩包，验证 `.sha256` 文件，解压后运行：
 
 ```bash
 ./install.sh
@@ -67,7 +67,7 @@ bash install-online.sh
 只有从源码编译时才需要 Rust 1.66 或更高版本：
 
 ```bash
-git clone https://github.com/hhhSyyyShhh/pinyintab.git
+git clone https://github.com/hhhSyyyShhh/PinyinTab.git
 cd pinyintab
 ./scripts/install-from-source.sh
 ```
@@ -171,7 +171,7 @@ cargo build --release --locked
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/pinyintab&type=Date)](https://star-history.com/#hhhSyyyShhh/pinyintab&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date)](https://star-history.com/#hhhSyyyShhh/PinyinTab&Date)
 
 创建公开 GitHub 仓库并配置仓库所有者以后，Star History 曲线才会开始产生数据。
 

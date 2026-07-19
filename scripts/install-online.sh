@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repository="${PINYINTAB_REPOSITORY:-hhhSyyyShhh/pinyintab}"
+repository="${PINYINTAB_REPOSITORY:-hhhSyyyShhh/PinyinTab}"
 if [[ ! "$repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
     echo "error: invalid GitHub repository: $repository" >&2
     echo "expected format: owner/repository" >&2
