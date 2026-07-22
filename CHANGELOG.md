@@ -4,6 +4,16 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ## [Unreleased]
 
+### Changed
+
+- Split the Rust command-line, completion, path-resolution, Pinyin-mapping, and diagnostics code into focused modules.
+- Reduced the binary entry point to process startup only and documented the core interfaces.
+
+### Testing
+
+- Expanded unit coverage for aliases, mixed-script matching, nested paths, ambiguity, command filters, Java classes, diagnostics, and hidden files.
+- Added an LCOV job to CI with a 70% minimum Rust line-coverage gate.
+
 ### Planned
 
 - Configurable polyphonic phrase dictionary.

@@ -20,6 +20,15 @@ cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
 ```
 
+CI also generates an LCOV report and enforces at least 70% Rust line coverage.
+To reproduce that check locally, install `cargo-llvm-cov` and run:
+
+```bash
+cargo llvm-cov --locked --all-targets \
+  --lcov --output-path lcov.info \
+  --fail-under-lines 70
+```
+
 ## Completion changes
 
 Every completion change should include a test containing:
