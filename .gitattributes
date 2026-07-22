@@ -5,3 +5,5 @@
 *.md text eol=lf
 *.pdf binary
 *.mov binary
+*.mp4 binary
+*.gif binary

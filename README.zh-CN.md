@@ -4,18 +4,20 @@
 
 **以音寻字，一键成径。**
 
-在 Bash 或 Zsh 中输入拼音，按下 <kbd>Tab</kbd>，补全真实中文路径。
+面向 Bash 与 Zsh 的原生中文路径拼音补全插件。
 
-[English](README.md) · [安装](#安装) · [兼容范围](#兼容范围) · [项目文档](#项目文档)
+[English](README.md) · [安装](#安装) · [使用](#使用) · [兼容范围](#兼容范围)
 
 [![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/PinyinTab?display_name=tag)](https://github.com/hhhSyyyShhh/PinyinTab/releases)
+[![Stars](https://img.shields.io/github/stars/hhhSyyyShhh/PinyinTab?style=flat)](https://github.com/hhhSyyyShhh/PinyinTab/stargazers)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20macOS%20arm64-lightgrey)](#兼容范围)
 
 </div>
 
-PinyinTab 是面向中文文件名和目录名的原生终端补全插件。它不会重命名文件、创建磁盘别名、挂载虚拟文件系统，也不会修改 Python、Java、Julia 等解释器。Shell 会在命令执行前，把输入的拼音替换为真实中文路径。
+PinyinTab 允许用户输入中文文件名或目录名的拼音，按下 <kbd>Tab</kbd> 后插入真实路径。它不会重命名文件、挂载虚拟文件系统，也不会修改解释器。
+
+[![PinyinTab 终端演示](assets/demo.gif)](assets/demo.mp4)
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -23,76 +25,63 @@ python3 jiujiuchengfabiao.py<Tab>
 python3 九九乘法表.py
 ```
 
-它也支持多级路径和歧义候选的继续缩小：
+## 功能
 
-```text
-cd ceshimulu/neibuwenjiant<Tab>     → cd 测试目录/内部文件夹/
-python3 jiujiu<Tab>                 → 展示多个“九九…”候选
-python3 九九cf<Tab>                 → python3 九九乘法表.py
-```
-
-## 核心特点
-
-- 使用普通 <kbd>Tab</kbd> 完成补全，不打开模糊搜索界面，也不进入虚拟目录。
 - 支持全拼、首字母、真实中文前缀以及“中文 + 拼音”混合缩小候选。
-- 支持用拼音逐层解析父目录和子路径。
-- 根据命令语义区分目录、普通文件和 Java 类名。
-- `ptab on` 与 `ptab off` 可逆，关闭后恢复原来的 Shell 补全器。
-- Linux Bash 与 macOS Zsh 共用一个 Rust 核心。
-- 不需要后台服务、不需要 FUSE，补全过程不联网。
+- 支持用拼音逐层补全父目录和多级路径。
+- 多个候选存在时保留输入，可继续键入并精确筛选。
+- 根据命令语义区分目录、文件和 Java 类名。
+- `ptab on` / `ptab off` 可逆，关闭时恢复原 Shell 补全器。
+- Linux Bash 与 macOS Zsh 共用同一个 Rust 核心。
+- 补全时不需要后台服务、FUSE 或网络连接。
 
 ## 安装
 
-### 安装预编译版本
+### 预编译版本
 
-普通用户不需要安装 Rust，安装过程也不需要 `sudo`：
+安装仅作用于当前用户，不需要 `sudo`，也不需要 Rust：
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fsSLO \
-  https://raw.githubusercontent.com/hhhSyyyShhh/PinyinTab/main/scripts/install-online.sh
+curl --proto '=https' --tlsv1.2 -fL \
+  https://github.com/hhhSyyyShhh/PinyinTab/releases/latest/download/install-online.sh \
+  -o install-online.sh
 less install-online.sh
 bash install-online.sh
 ```
 
-安装后重新打开终端，或者按照安装器提示重新加载 Shell 配置。以后打开新终端时 PinyinTab 会自动启用。
-
-也可以从 [GitHub Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases) 手动下载与系统对应的压缩包，验证 `.sha256` 文件，解压后运行：
-
-```bash
-./install.sh
-```
+安装后重新打开终端。如果所在网络无法访问 GitHub，请从 [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases) 手动下载对应压缩包和 `.sha256` 文件，校验并解压后运行 `./install.sh`。
 
 ### 从源码安装
 
-只有从源码编译时才需要 Rust 1.66 或更高版本：
+只有源码构建需要 Rust 1.66 或更新版本：
 
 ```bash
 git clone https://github.com/hhhSyyyShhh/PinyinTab.git
-cd pinyintab
+cd PinyinTab
 ./scripts/install-from-source.sh
 ```
 
 ### 卸载
 
-在 Release 解压目录或源码目录中运行：
+在源码目录或 Release 解压目录中运行：
 
 ```bash
 ./uninstall.sh
 ```
 
-卸载器会删除 `.bashrc` 和 `.zshrc` 中带有 PinyinTab 边界标记的配置，以及 `~/.local` 下安装的程序；安装时生成的配置备份不会自动删除。
+卸载器会删除 PinyinTab 写入的 Shell 配置块和 `~/.local` 下的安装文件，并保留安装时生成的配置备份。
 
-## 使用方法
+## 使用
 
 ```bash
-ptab on       # 在当前终端启用
-ptab off      # 关闭并恢复原有补全器
-ptab status   # 查看当前状态
-ptab doctor   # 查看版本、系统、架构、Shell 和启用状态
+ptab on       # 在当前 Shell 启用
+ptab off      # 关闭并恢复原补全器
+ptab status   # 查看 Shell 集成状态
+ptab doctor   # 查看版本、系统、架构、Shell 和状态
 ptab version
 ```
 
-启用以后直接使用原来的命令：
+启用后照常输入命令，并在拼音路径处按 <kbd>Tab</kbd>：
 
 ```bash
 cd ceshimulu<Tab>
@@ -103,80 +92,52 @@ javac chengfakoujuebiao.java<Tab>
 java chengfakoujuebiao<Tab>
 ```
 
-按下 Tab 后，命令行里出现的是磁盘上的真实中文名称。拼音只是一种输入查询，不是一个按下回车后仍然存在的虚拟文件名。
+补全后命令行中出现的是磁盘上的真实中文名称。拼音只在按 Tab 时作为查询使用，不是按 Enter 后仍然有效的虚拟文件名。
 
 ## 兼容范围
 
-v0.3 首发只正式构建两个目标：
-
 | 平台 | 架构 | Shell | Release 目标 | 状态 |
 |---|---|---|---|---|
-| Ubuntu Linux 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | 正式支持并测试 |
-| macOS 14+ | Apple M1 或更新芯片 | Zsh | `aarch64-apple-darwin` | 正式支持并测试 |
-| 其他 glibc Linux | x86_64 / AMD64 | Bash 或 Zsh | 可尝试同一 Linux 包 | 预期可用，但暂不保证 |
-| Linux ARM64 | arm64 | Bash 或 Zsh | — | 暂不发布 |
-| Intel Mac | x86_64 | Zsh | — | 暂不发布 |
-| Windows | x86_64 / arm64 | PowerShell | — | 后续路线图 |
+| Ubuntu 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | 已测试 |
+| macOS 14+ | Apple Silicon | Zsh | `aarch64-apple-darwin` | 已测试 |
+| 其他 glibc Linux | x86_64 / AMD64 | Bash 或 Zsh | Linux 包 | 预期可用，不保证 |
+| Alpine/musl、Linux ARM64、Intel Mac、Windows | — | — | — | 暂未发布 |
 
-所以“Linux 都适配”并不准确。当前 Linux 包使用 GNU/glibc 目标：Ubuntu、Debian等同架构系统更有希望直接运行；Alpine/musl、非常旧的 glibc 和非 x86_64 机器需要单独构建。
-
-PinyinTab 主要处理普通本地路径参数。远程 `host:path`、URL、here-document、程序自定义参数语法，以及复杂第三方补全器可能需要单独适配，详见[兼容边界](docs/COMPATIBILITY.md)。
+PinyinTab 面向普通本地路径参数。远程 `host:path`、URL、here-document、程序自定义参数语法和第三方补全器可能需要单独适配，详见[兼容边界](docs/COMPATIBILITY.md)。
 
 ## 工作原理
 
 ```text
-用户输入拼音
-    ↓
-Bash/Zsh 判断当前参数是不是路径
-    ↓
-ptab 扫描当前层目录并生成拼音候选
-    ↓
-Shell 写入真实中文路径
-    ↓
-cd / Python / Java / Julia / cat 收到普通路径
+在 Bash/Zsh 中输入拼音
+          ↓
+Shell 识别当前路径参数和命令场景
+          ↓
+Rust 扫描当前一层目录并匹配真实名、全拼和首字母
+          ↓
+Shell 展示或插入真实中文路径
+          ↓
+cd、Python、Java、Julia 等命令正常执行
 ```
 
-PinyinTab 并不直接修改解释器，它是在解释器进程启动以前完成路径替换。组件和安全边界详见[架构文档](docs/ARCHITECTURE.md)。
+补全核心逐层解析父目录，只在结果安全时插入路径。模块结构与安全边界见[架构文档](docs/ARCHITECTURE.md)。
 
-## 项目文档
-
-- [系统架构](docs/ARCHITECTURE.md)
-- [兼容边界](docs/COMPATIBILITY.md)
-- [项目维护、Git 提交、README、Star History 与完整发布流程](docs/RELEASE_GUIDE.md)
-- [竞品分析与 Common Criteria](docs/COMPETITOR_ANALYSIS.md)
-- [Bug 历史与回归测试](docs/BUG_REPORT.md)
-- [技术栈详细介绍](docs/技术栈与实现说明.md)
-- [Linux 部署记录](docs/Linux版本部署与测试.md)
-
-## 开发测试
+## 开发
 
 ```bash
-cargo test --locked
+cargo fmt --all -- --check
+cargo test --locked --all-targets
+cargo clippy --locked --all-targets -- -D warnings
 cargo build --release --locked
-./scripts/test-completion.sh    # Bash
-./scripts/test-macos.zsh       # macOS Zsh
+./scripts/test-completion.sh
+./scripts/test-macos.zsh
 ```
 
-`demo-source` 提供 Python、Java、Julia、JavaScript、Ruby、Perl、C、Rust、Swift 和 Bash 的中文文件名示例。
+CI 会在 Ubuntu 和 macOS 上运行 Rust 与 Shell 测试、检查格式和 Clippy，并要求 Rust 行覆盖率不低于 70%。`demo-source` 提供 Python、Java、Julia、JavaScript、Ruby、Perl、C、Rust、Swift 和 Bash 的中文文件名示例。
 
-## 路线图
+## 贡献与安全
 
-- [x] Bash 与 Zsh 原生补全
-- [x] 全拼、首字母、混合缩小候选和多级路径
-- [x] Linux x86_64 与 macOS arm64 Release 打包
-- [ ] 更多多音字词组覆盖和自定义字典
-- [ ] Fish Shell 集成
-- [ ] Linux ARM64 与 Intel macOS 构建
-- [ ] Windows PowerShell 原型
+提交 Pull Request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。用户可见变化应记录在 [CHANGELOG.md](CHANGELOG.md)。可能造成路径信息泄露或 Shell 注入的安全问题请按照 [SECURITY.md](SECURITY.md) 私下报告，不要创建公开 Issue。
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date&legend=top-left)](https://www.star-history.com/?repos=hhhSyyyShhh%2FPinyinTab&type=date&legend=top-left)
-
-## 参与贡献与安全问题
-
-提交 Pull Request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。如果发现可能泄露路径信息或造成 Shell 注入的安全问题，请按照 [SECURITY.md](SECURITY.md) 私下报告，不要直接创建公开 Issue。
-
-## 开源许可证
+## 许可证
 
 PinyinTab 使用 [MIT License](LICENSE)。

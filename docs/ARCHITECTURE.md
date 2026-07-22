@@ -26,8 +26,11 @@ Shell 插入真实中文路径
 
 | 组件 | 文件 | 职责 |
 |---|---|---|
-| 拼音映射库 | `src/lib.rs` | 将汉字名称生成全拼和首字母，并处理少量多音词组覆盖 |
-| 候选生成程序 | `src/main.rs` | 拆分路径、逐层解析目录、过滤文件类型、排序并输出候选 |
+| 二进制入口 | `src/main.rs` | 读取进程参数并启动库中的 CLI |
+| 命令接口 | `src/cli.rs` | 解析 `ptab` 子命令、过滤模式和退出状态 |
+| 拼音映射 | `src/mapper.rs` | 将汉字名称生成全拼和首字母，并处理少量多音词组覆盖 |
+| 候选生成 | `src/completion/` | 拆分路径、逐层解析目录、匹配、过滤类型并返回真实候选 |
+| 诊断信息 | `src/diagnostics.rs` | 生成版本与平台诊断文本 |
 | Bash 集成 | `shell/pinyintab.bash` | 读取光标处单词，调用 `ptab complete`，维护并恢复 Bash 补全定义 |
 | Zsh 集成 | `shell/pinyintab.zsh` | 调用 Rust 核心并通过 `compadd` 写入文件与目录候选 |
 | 管理入口 | Shell 函数 `ptab` | 提供 `on`、`off`、`status`、`doctor` 和 `version` |
@@ -88,7 +91,7 @@ PinyinTab 补全：python3 ceshi.py<Tab> → python3 测试.py
 
 当前实现按一次 Tab 扫描当前目录的一层条目，复杂度近似为 `O(n × m)`：`n` 是这一层目录项数量，`m` 是单个名称长度。它不递归扫描整个项目，也不建立常驻索引，因此普通目录中延迟很小、状态简单。
 
-未来若为超大目录增加缓存，需要同时解决目录变更失效、内存上限和隐私边界，不能只追求基准测试速度。
+如果后续为超大目录增加缓存，需要同时解决目录变更失效、内存上限和隐私边界。
 
 ## 7. 安全边界
 
@@ -105,7 +108,7 @@ PinyinTab 补全：python3 ceshi.py<Tab> → python3 测试.py
 
 ```text
                          Rust core
-                         src/*.rs
+                     src/completion/*.rs
                          /      \
                         /        \
        Linux x86_64 + Bash        macOS arm64 + Zsh
