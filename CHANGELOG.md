@@ -11,6 +11,10 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Simplified the public documentation and added a privacy-checked terminal demonstration.
 - Added the bootstrap installer to each GitHub Release so installation does not depend on `raw.githubusercontent.com`.
 
+### Added
+
+- Added an Oh My Zsh/Zsh plugin-manager entry point with an isolated CI smoke test.
+
 ### Testing
 
 - Expanded unit coverage for aliases, mixed-script matching, nested paths, ambiguity, command filters, Java classes, diagnostics, and hidden files.

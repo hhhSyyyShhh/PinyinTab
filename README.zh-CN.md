@@ -61,6 +61,17 @@ cd PinyinTab
 ./scripts/install-from-source.sh
 ```
 
+### Oh My Zsh
+
+安装好二进制后，把仓库克隆为 Oh My Zsh 自定义插件：
+
+```zsh
+git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
+  "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/pinyintab"
+```
+
+在 `~/.zshrc` 的 `plugins=(...)` 中加入 `pinyintab`，重新打开 Zsh 即可。其他兼容的 Zsh 插件管理器也可以加载仓库根目录的 `pinyintab.plugin.zsh`。
+
 ### 卸载
 
 在源码目录或 Release 解压目录中运行：

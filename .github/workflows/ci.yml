@@ -38,11 +38,16 @@ jobs:
         run: bash -n install.sh uninstall.sh shell/pinyintab.bash scripts/*.sh
       - name: Zsh syntax
         if: runner.os == 'macOS'
-        run: zsh -n shell/pinyintab.zsh scripts/test-macos.zsh
+        run: zsh -n pinyintab.plugin.zsh shell/pinyintab.zsh scripts/*.zsh
       - name: Completion integration tests
         env:
           PINYINTAB_BINARY: ${{ github.workspace }}/target/release/ptab
         run: ${{ matrix.shell_test }}
+      - name: Oh My Zsh entry-point test
+        if: runner.os == 'macOS'
+        env:
+          PINYINTAB_BINARY: ${{ github.workspace }}/target/release/ptab
+        run: ./scripts/test-oh-my-zsh.zsh
 
   quality:
     name: Rust formatting and lints

@@ -61,6 +61,17 @@ cd PinyinTab
 ./scripts/install-from-source.sh
 ```
 
+### Oh My Zsh
+
+After installing the binary, clone the repository as an Oh My Zsh custom plugin:
+
+```zsh
+git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
+  "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/pinyintab"
+```
+
+Add `pinyintab` to the `plugins=(...)` list in `~/.zshrc`, then restart Zsh. The repository also exposes `pinyintab.plugin.zsh` for compatible Zsh plugin managers.
+
 ### Uninstall
 
 Run this from a source checkout or extracted release:
