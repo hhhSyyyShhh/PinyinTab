@@ -4,22 +4,6 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ## [Unreleased]
 
-### Changed
-
-- Split the Rust command-line, completion, path-resolution, Pinyin-mapping, and diagnostics code into focused modules.
-- Reduced the binary entry point to process startup only and documented the core interfaces.
-- Simplified the public documentation and added a privacy-checked terminal demonstration.
-- Added the bootstrap installer to each GitHub Release so installation does not depend on `raw.githubusercontent.com`.
-
-### Added
-
-- Added an Oh My Zsh/Zsh plugin-manager entry point with an isolated CI smoke test.
-
-### Testing
-
-- Expanded unit coverage for aliases, mixed-script matching, nested paths, ambiguity, command filters, Java classes, diagnostics, and hidden files.
-- Added an LCOV job to CI with a 70% minimum Rust line-coverage gate.
-
 ### Planned
 
 - Configurable polyphonic phrase dictionary.
@@ -33,9 +17,21 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Made the repository-owner configuration script reusable after the initial setup.
 - Preserved Zsh input while listing ambiguous English and Chinese/Pinyin candidates.
 
+### Added
+
+- Added an Oh My Zsh/Zsh plugin-manager entry point with an isolated CI smoke test.
+- Added an LCOV job to CI with a 70% minimum Rust line-coverage gate.
+
+### Changed
+
+- Split the Rust command-line, completion, path-resolution, Pinyin-mapping, and diagnostics code into focused modules.
+- Reduced the binary entry point to process startup only and documented the core interfaces.
+- Expanded unit coverage for aliases, mixed-script matching, nested paths, ambiguity, command filters, Java classes, diagnostics, and hidden files.
+- Added the bootstrap installer to each GitHub Release so installation does not depend on `raw.githubusercontent.com`.
+
 ### Documentation
 
-- Added a concise terminal demonstration and updated installation, compatibility, and architecture documentation.
+- Added a privacy-checked terminal demonstration and updated installation, compatibility, and architecture documentation.
 
 ## [0.3.0] - 2026-07-19
 
