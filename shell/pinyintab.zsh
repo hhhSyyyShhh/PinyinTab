@@ -12,8 +12,25 @@ _pinyintab_commands=(
   cargo rustc gcc clang swift swiftc
 )
 
+# Store the longest literal prefix shared by every candidate in REPLY.
+# Zsh calculates insertion text from real filenames, not from their Pinyin
+# aliases. Knowing this prefix lets us avoid deleting a semantic query such as
+# `t` when its candidates are the unrelated real names `test/` and `图片/`.
+_pinyintab_common_prefix() {
+  local prefix="${1:-}" candidate
+  shift || return 0
+
+  for candidate in "$@"; do
+    while [[ -n "$prefix" && "$candidate" != "$prefix"* ]]; do
+      prefix="${prefix[1,-2]}"
+    done
+  done
+
+  REPLY="$prefix"
+}
+
 _pinyintab_zsh_complete() {
-  local current mode candidate command output
+  local current mode candidate command output common_prefix
   local -a candidates directories files
   current="$PREFIX"
   mode=""
@@ -42,6 +59,21 @@ _pinyintab_zsh_complete() {
   (( ${#candidates[@]} > 0 )) || return 0
   # -U is required because the real Chinese candidate does not literally start
   # with the pinyin text currently present in PREFIX.
+  #
+  # When several semantic matches have no safe literal extension, passing them
+  # directly to compadd would erase part or all of the user's Pinyin. Display a
+  # read-only candidate list instead; after the user types enough to make the
+  # result unique, the normal compadd path below inserts the real filename.
+  if (( ${#candidates[@]} > 1 )); then
+    _pinyintab_common_prefix "${candidates[@]}"
+    common_prefix="$REPLY"
+    if [[ -z "$common_prefix" ||
+          ( "$current" == "$common_prefix"* && "$current" != "$common_prefix" ) ]]; then
+      _message -r "${(j:  :)candidates}"
+      return 0
+    fi
+  fi
+
   for candidate in "${candidates[@]}"; do
     if [[ "$candidate" == */ ]]; then
       directories+=("$candidate")

@@ -8,6 +8,7 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 - Fixed the online installer incorrectly rejecting the configured GitHub repository owner.
 - Made the repository-owner configuration script reusable after the initial setup.
+- Preserved Zsh input while listing ambiguous English and Chinese/Pinyin candidates.
 
 ### Documentation
 
