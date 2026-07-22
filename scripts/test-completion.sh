@@ -7,6 +7,7 @@ readonly PINYINTAB_BASH_TEST_FIXTURE="$(mktemp -d)"
 trap 'rm -rf -- "$PINYINTAB_BASH_TEST_FIXTURE"' EXIT
 
 mkdir -p "$PINYINTAB_BASH_TEST_FIXTURE/测试目录/内部文件夹" "$PINYINTAB_BASH_TEST_FIXTURE/你好"
+mkdir -p "$PINYINTAB_BASH_TEST_FIXTURE/图片" "$PINYINTAB_BASH_TEST_FIXTURE/test"
 touch "$PINYINTAB_BASH_TEST_FIXTURE/测试.py"
 touch "$PINYINTAB_BASH_TEST_FIXTURE/测视.py"
 touch "$PINYINTAB_BASH_TEST_FIXTURE/九九乘法表.py"
@@ -74,6 +75,11 @@ contains_line "$result" "测试.py"
 result="$($binary complete "$PINYINTAB_BASH_TEST_FIXTURE" README)"
 contains_line "$result" "README.md"
 
+# The same semantic prefix may match an English real name and Chinese Pinyin.
+result="$($binary complete "$PINYINTAB_BASH_TEST_FIXTURE" t --directories)"
+contains_line "$result" "test/"
+contains_line "$result" "图片/"
+
 result="$($binary complete "$PINYINTAB_BASH_TEST_FIXTURE" xiangmu)"
 contains_line "$result" "项目 说明.md"
 
@@ -133,6 +139,12 @@ COMP_WORDS=(cd nihao)
 COMP_CWORD=1
 _pinyintab_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "你好/"
+
+COMP_WORDS=(cd t)
+COMP_CWORD=1
+_pinyintab_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "test/"
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "图片/"
 
 COMP_WORDS=(python3 ceshimulu/neibu)
 COMP_CWORD=1
