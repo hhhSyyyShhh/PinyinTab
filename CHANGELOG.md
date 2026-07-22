@@ -8,6 +8,8 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 - Split the Rust command-line, completion, path-resolution, Pinyin-mapping, and diagnostics code into focused modules.
 - Reduced the binary entry point to process startup only and documented the core interfaces.
+- Simplified the public documentation and added a privacy-checked terminal demonstration.
+- Added the bootstrap installer to each GitHub Release so installation does not depend on `raw.githubusercontent.com`.
 
 ### Testing
 
@@ -29,7 +31,7 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ### Documentation
 
-- Expanded the maintainer guide with the complete Git, README, Star History, license, CI, packaging, and release workflow.
+- Added a concise terminal demonstration and updated installation, compatibility, and architecture documentation.
 
 ## [0.3.0] - 2026-07-19
 

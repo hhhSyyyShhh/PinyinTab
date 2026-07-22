@@ -4,18 +4,20 @@
 
 **Type the sound. Tab the path.**
 
-Type Pinyin in Bash or Zsh, press <kbd>Tab</kbd>, and get the real Chinese path.
+Native Pinyin-aware path completion for Bash and Zsh.
 
-[简体中文](README.zh-CN.md) · [Installation](#installation) · [Compatibility](#compatibility) · [Documentation](#documentation)
+[简体中文](README.zh-CN.md) · [Install](#installation) · [Usage](#usage) · [Compatibility](#compatibility)
 
 [![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hhhSyyyShhh/PinyinTab?display_name=tag)](https://github.com/hhhSyyyShhh/PinyinTab/releases)
+[![Stars](https://img.shields.io/github/stars/hhhSyyyShhh/PinyinTab?style=flat)](https://github.com/hhhSyyyShhh/PinyinTab/stargazers)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20macOS%20arm64-lightgrey)](#compatibility)
 
 </div>
 
-PinyinTab is a native shell-completion plugin for Chinese file and directory names. It does not rename files, create aliases on disk, mount a virtual filesystem, or modify interpreters. The shell replaces the typed Pinyin with the real path before `cd`, Python, Java, Julia, or another command runs.
+PinyinTab lets you type Pinyin for a Chinese filename or directory and press <kbd>Tab</kbd> to insert its real path. It does not rename files, mount a virtual filesystem, or modify interpreters.
+
+[![PinyinTab terminal demo](assets/demo.gif)](assets/demo.mp4)
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -23,76 +25,63 @@ python3 jiujiuchengfabiao.py<Tab>
 python3 九九乘法表.py
 ```
 
-Nested paths and refinement after an ambiguous match are supported:
+## Features
 
-```text
-cd ceshimulu/neibuwenjiant<Tab>     → cd 测试目录/内部文件夹/
-python3 jiujiu<Tab>                 → several 九九… candidates
-python3 九九cf<Tab>                 → python3 九九乘法表.py
-```
-
-## Why PinyinTab?
-
-- Native <kbd>Tab</kbd> completion: no fuzzy-finder screen and no virtual directory.
-- Full Pinyin, initials, real Chinese prefixes, and mixed Chinese + Pinyin refinement.
-- Multi-level path resolution, including Pinyin parent directories.
-- Command-aware candidates for directories, files, and Java class names.
+- Full Pinyin, initials, literal Chinese prefixes, and mixed Chinese + Pinyin refinement.
+- Multi-level completion through Pinyin parent directories.
+- Ambiguous candidates remain visible while further input narrows the result.
+- Command-aware directory, file, and Java class completion.
 - Reversible `ptab on` / `ptab off` integration that restores previous completers.
-- One Rust core shared by Bash on Linux and Zsh on macOS.
-- No daemon, no FUSE, and no network access during completion.
+- One Rust core shared by Linux Bash and macOS Zsh.
+- No daemon, FUSE mount, or network request during completion.
 
 ## Installation
 
-### Install a prebuilt release
+### Prebuilt release
 
-The installer needs no Rust toolchain and installs only for the current user.
+The installer is per-user, requires no `sudo`, and does not require Rust:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -fsSLO \
-  https://raw.githubusercontent.com/hhhSyyyShhh/PinyinTab/main/scripts/install-online.sh
+curl --proto '=https' --tlsv1.2 -fL \
+  https://github.com/hhhSyyyShhh/PinyinTab/releases/latest/download/install-online.sh \
+  -o install-online.sh
 less install-online.sh
 bash install-online.sh
 ```
 
-Restart the terminal, or reload the shell configuration shown by the installer. PinyinTab starts automatically in new terminals.
+Restart the terminal after installation. If GitHub is unavailable from your network, download the matching archive and `.sha256` file from [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify it, extract it, and run `./install.sh`.
 
-You can also download the matching archive from [GitHub Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify its `.sha256` file, extract it, and run:
+### From source
 
-```bash
-./install.sh
-```
-
-### Install from source
-
-Rust 1.66 or newer is required only for a source installation:
+Rust 1.66 or newer is required only for a source build:
 
 ```bash
 git clone https://github.com/hhhSyyyShhh/PinyinTab.git
-cd pinyintab
+cd PinyinTab
 ./scripts/install-from-source.sh
 ```
 
 ### Uninstall
 
-From a release archive or source checkout:
+Run this from a source checkout or extracted release:
 
 ```bash
 ./uninstall.sh
 ```
 
-The uninstaller removes the marked PinyinTab block from `.bashrc` and `.zshrc`, plus files installed under `~/.local`. It does not delete the backup created during installation.
+The uninstaller removes PinyinTab's marked Shell configuration block and files under `~/.local`. It preserves the configuration backup created during installation.
 
 ## Usage
 
 ```bash
-ptab on       # enable completion in this shell
-ptab off      # restore the previous shell completers
-ptab status   # show current shell state
+ptab on       # enable in the current shell
+ptab off      # restore the previous completers
+ptab status   # show shell integration state
 ptab doctor   # show version, platform, architecture, shell, and state
 ptab version
 ```
 
-Use ordinary commands after activation:
+Use normal commands and press <kbd>Tab</kbd> on the Pinyin path:
 
 ```bash
 cd ceshimulu<Tab>
@@ -103,80 +92,52 @@ javac chengfakoujuebiao.java<Tab>
 java chengfakoujuebiao<Tab>
 ```
 
-The command line contains the real Chinese name after completion. Pinyin is an input query, not a filename that remains valid after pressing Enter.
+After completion, the command line contains the real Chinese name. Pinyin is a query used at Tab time, not a virtual filename that remains valid after Enter.
 
 ## Compatibility
 
-Prebuilt v0.3 releases intentionally cover two targets first:
-
 | Platform | Architecture | Shell | Release target | Status |
 |---|---|---|---|---|
-| Ubuntu Linux 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | Supported and tested |
-| macOS 14+ | Apple Silicon M1 or newer | Zsh | `aarch64-apple-darwin` | Supported and tested |
-| Other glibc Linux distributions | x86_64 / AMD64 | Bash or Zsh | same Linux binary | Expected, not yet guaranteed |
-| Linux ARM64 | arm64 | Bash or Zsh | — | Not released yet |
-| Intel macOS | x86_64 | Zsh | — | Not released yet |
-| Windows | x86_64 / arm64 | PowerShell | — | Roadmap |
+| Ubuntu 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | Tested |
+| macOS 14+ | Apple Silicon | Zsh | `aarch64-apple-darwin` | Tested |
+| Other glibc Linux | x86_64 / AMD64 | Bash or Zsh | Linux package | Expected, not guaranteed |
+| Alpine/musl, Linux ARM64, Intel macOS, Windows | — | — | — | Not currently released |
 
-The Linux binary is not automatically universal across every Linux system. It depends on the GNU/glibc target; Alpine/musl, very old glibc systems, and non-x86_64 machines need separate builds.
-
-PinyinTab handles ordinary local path arguments. Remote `host:path` syntax, URLs, here-documents, program-specific option grammars, and third-party completers can require dedicated integration. See [Compatibility Boundary](docs/COMPATIBILITY.md).
+PinyinTab targets ordinary local path arguments. Remote `host:path` syntax, URLs, here-documents, application-specific option grammars, and third-party completers may need dedicated integration. See the [compatibility boundary](docs/COMPATIBILITY.md).
 
 ## How it works
 
 ```text
-typed Pinyin
-    ↓
-Bash/Zsh identifies a path argument
-    ↓
-ptab scans one directory level and generates Pinyin candidates
-    ↓
-the shell inserts the real Chinese path
-    ↓
-cd / Python / Java / Julia / cat receives a normal path
+Pinyin typed in Bash/Zsh
+          ↓
+Shell selects the current path argument and command context
+          ↓
+Rust scans one directory level and matches real/full/initial aliases
+          ↓
+Shell displays or inserts the real Chinese path
+          ↓
+cd, Python, Java, Julia, or another command runs normally
 ```
 
-PinyinTab interacts with interpreters only indirectly: it completes the path before the interpreter process starts. See [Architecture](docs/ARCHITECTURE.md) for the component and trust boundaries.
-
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Compatibility boundary](docs/COMPATIBILITY.md)
-- [Maintainer, Git, README, Star History, and release guide (Chinese)](docs/RELEASE_GUIDE.md)
-- [Competitive analysis and common criteria](docs/COMPETITOR_ANALYSIS.md)
-- [Bug history and regression coverage](docs/BUG_REPORT.md)
-- [Technical stack introduction (Chinese)](docs/技术栈与实现说明.md)
-- [Linux deployment notes (Chinese)](docs/Linux版本部署与测试.md)
+The completion engine resolves parent components one level at a time and inserts a path only when it can do so safely. See [architecture](docs/ARCHITECTURE.md) for module and trust boundaries.
 
 ## Development
 
 ```bash
-cargo test --locked
+cargo fmt --all -- --check
+cargo test --locked --all-targets
+cargo clippy --locked --all-targets -- -D warnings
 cargo build --release --locked
-./scripts/test-completion.sh    # Bash
-./scripts/test-macos.zsh       # Zsh on macOS
+./scripts/test-completion.sh
+./scripts/test-macos.zsh
 ```
 
-The `demo-source` directory contains Chinese-named examples for Python, Java, Julia, JavaScript, Ruby, Perl, C, Rust, Swift, and Bash.
-
-## Roadmap
-
-- [x] Bash and Zsh native completion
-- [x] Full Pinyin, initials, mixed refinement, and nested paths
-- [x] Linux x86_64 and macOS arm64 release packaging
-- [ ] More polyphonic phrase overrides and configurable dictionaries
-- [ ] Fish integration
-- [ ] Linux arm64 and Intel macOS builds
-- [ ] Windows PowerShell prototype
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=hhhSyyyShhh/PinyinTab&type=Date&legend=top-left)](https://www.star-history.com/?repos=hhhSyyyShhh%2FPinyinTab&type=date&legend=top-left)
+CI runs Rust and Shell tests on Ubuntu and macOS, checks formatting and Clippy, and enforces a 70% Rust line-coverage floor. Chinese-named examples for Python, Java, Julia, JavaScript, Ruby, Perl, C, Rust, Swift, and Bash are available in `demo-source`.
 
 ## Contributing and security
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please report security-sensitive path disclosure or shell-injection concerns according to [SECURITY.md](SECURITY.md), not through a public issue.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. User-visible changes belong in [CHANGELOG.md](CHANGELOG.md). Report potential path disclosure or Shell-injection vulnerabilities according to [SECURITY.md](SECURITY.md), not in a public issue.
 
 ## License
 
-PinyinTab is available under the [MIT License](LICENSE).
+PinyinTab is released under the [MIT License](LICENSE).
