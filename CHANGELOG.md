@@ -4,6 +4,13 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ## [Unreleased]
 
+### Planned
+
+- Configurable polyphonic phrase dictionary.
+- Fish integration and additional release architectures.
+
+## [0.3.1] - 2026-07-23
+
 ### Fixed
 
 - Fixed the online installer incorrectly rejecting the configured GitHub repository owner.
@@ -13,11 +20,6 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 ### Documentation
 
 - Expanded the maintainer guide with the complete Git, README, Star History, license, CI, packaging, and release workflow.
-
-### Planned
-
-- Configurable polyphonic phrase dictionary.
-- Fish integration and additional release architectures.
 
 ## [0.3.0] - 2026-07-19
 
