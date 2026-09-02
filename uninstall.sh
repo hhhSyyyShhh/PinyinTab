@@ -15,7 +15,8 @@ remove_startup_block() {
         $0 == end   { skipping = 0; next }
         !skipping   { print }
     ' "$rc_file" >"$temp_file"
-    mv "$temp_file" "$rc_file"
+    cat "$temp_file" >"$rc_file"
+    rm -f "$temp_file"
 }
 
 remove_startup_block "$HOME/.bashrc"
