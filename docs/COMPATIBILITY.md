@@ -4,10 +4,29 @@
 
 | 系统 | CPU | 默认 Shell | 测试方式 |
 |---|---|---|---|
-| Ubuntu 22.04 及更新版本 | x86_64 / AMD64 | Bash | GitHub Actions + Bash 回归脚本 |
+| Ubuntu 22.04、24.04 | x86_64 / AMD64 | Bash | GitHub Actions Runner/容器 + Release 安装测试 |
+| CentOS Stream 9 | x86_64 / AMD64 | Bash | 官方容器 + Release 安装测试 |
 | macOS 14 及更新版本 | Apple Silicon arm64 | Zsh | GitHub Actions M 系列 Runner + Zsh 回归脚本 |
 
-Linux Release 使用 `x86_64-unknown-linux-gnu`。它通常也能运行在较新的 Debian、Fedora 等 x86_64 glibc 发行版上，但首发不能承诺“所有 Linux”：Alpine 默认使用 musl；旧发行版可能缺少所需 glibc；ARM 服务器无法运行 x86_64 二进制。
+Linux Release 使用 `x86_64-unknown-linux-gnu`，要求 glibc 2.34 或更新版本。它通常也能运行在满足版本要求的 Debian、Fedora、RHEL、Rocky Linux、AlmaLinux 等 x86_64 发行版上，但未经 CI 验证的平台只标记为“预期可用”。Alpine 默认使用 musl；旧发行版可能缺少所需 glibc；ARM 服务器无法运行 x86_64 二进制。
+
+CentOS Linux 7/8 与 CentOS Stream 8 已停止维护，并且不满足当前 Release 的运行时基线，因此不属于支持平台。“支持 CentOS”在本项目中明确指 CentOS Stream 9 x86_64，而不是所有历史 CentOS 版本。
+
+## 安装后的启用策略
+
+普通安装会在 Shell 配置中加载 PinyinTab 集成，使 `ptab` 命令可用，但不会自动执行 `ptab on`。用户可以在需要拼音补全的当前 Shell 中手动启用：
+
+```bash
+ptab on
+```
+
+希望每次打开新终端都启用的用户，需要在安装时明确传入：
+
+```bash
+bash install-online.sh --enable-on-startup
+```
+
+重新安装会更新 PinyinTab 固定标记之间的托管配置，并保留标记外的用户配置和首次安装备份。
 
 ## 已覆盖行为
 
@@ -23,6 +42,7 @@ Linux Release 使用 `x86_64-unknown-linux-gnu`。它通常也能运行在较新
 - Java 源文件与 `.class` 类名的不同语义。
 - Bash 管道后的当前命令识别。
 - `ptab off` 恢复启用前的补全定义。
+- 新终端默认保持补全关闭，除非安装时明确选择自动启用。
 
 ## 不是“所有命令都无条件支持”
 
@@ -51,6 +71,8 @@ Bash 集成会在 `|`、`||`、`&&` 和 `;` 后重新确定当前命令，因此
 2. 第三方框架动态生成补全定义，无法仅靠保存一条定义完全还原其内部状态。
 
 测试新 Shell 框架时应至少验证：启用前补全、启用后的拼音补全、关闭后的原补全、重复开关和新终端自动加载。
+
+`ptab doctor` 在 Linux 上会同时报告发行版名称与 glibc 版本，提交兼容性问题时应附上完整输出。
 
 ## 文件系统与编码
 

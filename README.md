@@ -49,7 +49,19 @@ less install-online.sh
 bash install-online.sh
 ```
 
-Restart the terminal after installation. If GitHub is unavailable from your network, download the matching archive and `.sha256` file from [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify it, extract it, and run `./install.sh`.
+The normal installer loads the `ptab` command but leaves completion disabled. Restart the terminal and enable it for the current Shell when needed:
+
+```bash
+ptab on
+```
+
+To opt in to automatic activation in every new Shell, install with:
+
+```bash
+bash install-online.sh --enable-on-startup
+```
+
+If GitHub is unavailable from your network, download the matching archive and `.sha256` file from [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify it, extract it, and run `./install.sh` with the same optional flag.
 
 ### From source
 
@@ -70,7 +82,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
   "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/pinyintab"
 ```
 
-Add `pinyintab` to the `plugins=(...)` list in `~/.zshrc`, then restart Zsh. The repository also exposes `pinyintab.plugin.zsh` for compatible Zsh plugin managers.
+Add `pinyintab` to the `plugins=(...)` list in `~/.zshrc`, then restart Zsh. Selecting the plugin is an explicit opt-in, so this entry point enables completion when Oh My Zsh loads it. The repository also exposes `pinyintab.plugin.zsh` for compatible Zsh plugin managers.
 
 ### Uninstall
 
@@ -109,12 +121,13 @@ After completion, the command line contains the real Chinese name. Pinyin is a q
 
 | Platform | Architecture | Shell | Release target | Status |
 |---|---|---|---|---|
-| Ubuntu 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | Tested |
+| Ubuntu 22.04 / 24.04 | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | Tested |
+| CentOS Stream 9 | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | Tested |
 | macOS 14+ | Apple Silicon | Zsh | `aarch64-apple-darwin` | Tested |
-| Other glibc Linux | x86_64 / AMD64 | Bash or Zsh | Linux package | Expected, not guaranteed |
+| Other glibc 2.34+ Linux | x86_64 / AMD64 | Bash or Zsh | Linux package | Expected, not guaranteed |
 | Alpine/musl, Linux ARM64, Intel macOS, Windows | — | — | — | Not currently released |
 
-PinyinTab targets ordinary local path arguments. Remote `host:path` syntax, URLs, here-documents, application-specific option grammars, and third-party completers may need dedicated integration. See the [compatibility boundary](docs/COMPATIBILITY.md).
+The Linux archive requires glibc 2.34 or newer. End-of-life CentOS Linux 7/8 and CentOS Stream 8 are not supported. PinyinTab targets ordinary local path arguments; remote `host:path` syntax, URLs, here-documents, application-specific option grammars, and third-party completers may need dedicated integration. See the [compatibility boundary](docs/COMPATIBILITY.md).
 
 ## How it works
 

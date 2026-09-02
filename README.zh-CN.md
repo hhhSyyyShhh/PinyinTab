@@ -49,7 +49,19 @@ less install-online.sh
 bash install-online.sh
 ```
 
-安装后重新打开终端。如果所在网络无法访问 GitHub，请从 [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases) 手动下载对应压缩包和 `.sha256` 文件，校验并解压后运行 `./install.sh`。
+普通安装只会加载 `ptab` 命令，默认不会自动接管新终端的补全。重新打开终端后，需要时执行：
+
+```bash
+ptab on
+```
+
+如果明确希望每次打开新终端都自动启用，请使用：
+
+```bash
+bash install-online.sh --enable-on-startup
+```
+
+如果所在网络无法访问 GitHub，请从 [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases) 手动下载对应压缩包和 `.sha256` 文件，校验并解压后运行 `./install.sh`，自动启动参数仍可选用。
 
 ### 从源码安装
 
@@ -70,7 +82,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
   "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/pinyintab"
 ```
 
-在 `~/.zshrc` 的 `plugins=(...)` 中加入 `pinyintab`，重新打开 Zsh 即可。其他兼容的 Zsh 插件管理器也可以加载仓库根目录的 `pinyintab.plugin.zsh`。
+在 `~/.zshrc` 的 `plugins=(...)` 中加入 `pinyintab`，重新打开 Zsh 即可。把插件加入列表本身就是明确启用，因此 Oh My Zsh 加载入口会自动开启补全。其他兼容的 Zsh 插件管理器也可以加载仓库根目录的 `pinyintab.plugin.zsh`。
 
 ### 卸载
 
@@ -109,12 +121,13 @@ java chengfakoujuebiao<Tab>
 
 | 平台 | 架构 | Shell | Release 目标 | 状态 |
 |---|---|---|---|---|
-| Ubuntu 22.04+ | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | 已测试 |
+| Ubuntu 22.04 / 24.04 | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | 已测试 |
+| CentOS Stream 9 | x86_64 / AMD64 | Bash | `x86_64-unknown-linux-gnu` | 已测试 |
 | macOS 14+ | Apple Silicon | Zsh | `aarch64-apple-darwin` | 已测试 |
-| 其他 glibc Linux | x86_64 / AMD64 | Bash 或 Zsh | Linux 包 | 预期可用，不保证 |
+| 其他 glibc 2.34+ Linux | x86_64 / AMD64 | Bash 或 Zsh | Linux 包 | 预期可用，不保证 |
 | Alpine/musl、Linux ARM64、Intel Mac、Windows | — | — | — | 暂未发布 |
 
-PinyinTab 面向普通本地路径参数。远程 `host:path`、URL、here-document、程序自定义参数语法和第三方补全器可能需要单独适配，详见[兼容边界](docs/COMPATIBILITY.md)。
+Linux 安装包要求 glibc 2.34 或更新版本。已经停止维护的 CentOS Linux 7/8 和 CentOS Stream 8 不在支持范围内。PinyinTab 面向普通本地路径参数；远程 `host:path`、URL、here-document、程序自定义参数语法和第三方补全器可能需要单独适配，详见[兼容边界](docs/COMPATIBILITY.md)。
 
 ## 工作原理
 

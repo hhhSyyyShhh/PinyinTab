@@ -9,6 +9,30 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.4.0] - 2026-09-02
+
+### Changed
+
+- Changed normal installations to load the `ptab` command without enabling completion automatically in every new Shell.
+- Reinstalling now migrates the installer-managed v0.3 startup block to the new opt-in policy while preserving unrelated Shell configuration and its original backup.
+- Expanded the supported Linux matrix from Ubuntu-only validation to Ubuntu 22.04, Ubuntu 24.04, and CentOS Stream 9 on x86_64.
+
+### Added
+
+- Added `--enable-on-startup` for users who explicitly want completion enabled in every new Shell.
+- Added installer policy tests and end-to-end tests that install the actual Linux Release archive on Ubuntu and CentOS Stream.
+- Added Linux distribution and glibc information to `ptab doctor` to improve compatibility reports.
+
+### Fixed
+
+- Added clear installer failures for missing download/checksum tools and Linux binaries that cannot run on the host.
+- Preserved existing Shell startup-file permissions when removing PinyinTab's managed block during uninstall.
+
+### Compatibility
+
+- The Linux Release requires x86_64 and glibc 2.34 or newer.
+- CentOS Linux 7/8 and CentOS Stream 8 are not supported; these releases are end-of-life and do not meet the binary runtime baseline.
+
 ## [0.3.1] - 2026-07-23
 
 ### Fixed

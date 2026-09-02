@@ -36,6 +36,8 @@ Shell 插入真实中文路径
 | 管理入口 | Shell 函数 `ptab` | 提供 `on`、`off`、`status`、`doctor` 和 `version` |
 | 安装与发布 | `install.sh`、`scripts/`、`.github/workflows/` | 用户级安装、卸载、构建归档、CI 与 GitHub Release |
 
+安装器默认只在 Shell 启动文件中加载管理函数，不自动开启补全。`ptab on` 是当前 Shell 的显式状态切换；只有 `--enable-on-startup` 会把自动启用命令写入托管配置块。
+
 ## 3. 匹配模型
 
 对真实名称 `九九乘法表.py`，核心可以生成：
@@ -111,8 +113,8 @@ PinyinTab 补全：python3 ceshi.py<Tab> → python3 测试.py
                      src/completion/*.rs
                          /      \
                         /        \
-       Linux x86_64 + Bash        macOS arm64 + Zsh
+ Linux x86_64 + Bash/Zsh          macOS arm64 + Zsh
  x86_64-unknown-linux-gnu         aarch64-apple-darwin
 ```
 
-平台差异主要存在于 Shell 补全 API、安装配置文件和二进制目标格式，不在拼音匹配算法本身。
+Linux Release 在 Ubuntu 22.04、Ubuntu 24.04 与 CentOS Stream 9 上执行同一归档的安装和补全测试，运行时基线为 glibc 2.34。平台差异主要存在于 Shell 补全 API、安装配置文件和二进制目标格式，不在拼音匹配算法本身。
