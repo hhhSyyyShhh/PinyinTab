@@ -33,6 +33,10 @@ jobs:
         run: cargo test --locked
       - name: Build release archive
         run: ./scripts/package-release.sh "${{ matrix.target }}"
+      - name: Test release archive
+        run: >-
+          ./scripts/test-release-archive.sh
+          "$(find dist -maxdepth 1 -name '*${{ matrix.target }}.tar.gz' -print -quit)"
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}

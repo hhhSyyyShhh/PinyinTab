@@ -8,6 +8,18 @@ if [[ ! "$repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
     exit 1
 fi
 
+for required_command in curl tar awk mktemp; do
+    if ! command -v "$required_command" >/dev/null 2>&1; then
+        echo "error: required command not found: $required_command" >&2
+        exit 1
+    fi
+done
+
+if ! command -v sha256sum >/dev/null 2>&1 && ! command -v shasum >/dev/null 2>&1; then
+    echo "error: SHA-256 verification requires sha256sum or shasum" >&2
+    exit 1
+fi
+
 case "$(uname -s)/$(uname -m)" in
     Linux/x86_64)
         target="x86_64-unknown-linux-gnu"

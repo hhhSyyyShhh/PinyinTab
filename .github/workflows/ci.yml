@@ -34,6 +34,8 @@ jobs:
         run: cargo test --locked --all-targets
       - name: Release build
         run: cargo build --release --locked
+      - name: Installer startup-policy tests
+        run: ./scripts/test-install.sh
       - name: Bash syntax
         run: bash -n install.sh uninstall.sh shell/pinyintab.bash scripts/*.sh
       - name: Zsh syntax
@@ -48,6 +50,41 @@ jobs:
         env:
           PINYINTAB_BINARY: ${{ github.workspace }}/target/release/ptab
         run: ./scripts/test-oh-my-zsh.zsh
+
+  linux-compatibility:
+    name: Linux release compatibility
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install stable Rust target
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup target add x86_64-unknown-linux-gnu
+      - name: Build Linux release archive
+        run: ./scripts/package-release.sh x86_64-unknown-linux-gnu
+      - name: Test on Ubuntu 22.04 runner
+        run: >-
+          ./scripts/test-release-archive.sh
+          "$(find dist -maxdepth 1 -name '*x86_64-unknown-linux-gnu.tar.gz' -print -quit)"
+      - name: Test on Ubuntu 24.04
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace:ro" \
+            ubuntu:24.04 \
+            bash -lc '
+              archive=$(find /workspace/dist -maxdepth 1 -name "*x86_64-unknown-linux-gnu.tar.gz" -print -quit)
+              /workspace/scripts/test-release-archive.sh "$archive"
+            '
+      - name: Test on CentOS Stream 9
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace:ro" \
+            quay.io/centos/centos:stream9 \
+            bash -lc '
+              archive=$(find /workspace/dist -maxdepth 1 -name "*x86_64-unknown-linux-gnu.tar.gz" -print -quit)
+              /workspace/scripts/test-release-archive.sh "$archive"
+            '
 
   quality:
     name: Rust formatting and lints

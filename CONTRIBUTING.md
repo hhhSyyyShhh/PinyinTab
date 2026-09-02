@@ -11,7 +11,10 @@ cargo test --locked
 cargo build --release --locked
 PINYINTAB_BINARY="$PWD/target/release/ptab" ./scripts/test-completion.sh
 PINYINTAB_BINARY="$PWD/target/release/ptab" ./scripts/test-macos.zsh
+./scripts/test-install.sh
 ```
+
+Linux compatibility changes must also build the Release archive and run `scripts/test-release-archive.sh` in every distribution being claimed as supported. CI currently performs this check on Ubuntu 22.04, Ubuntu 24.04, and CentOS Stream 9.
 
 Run formatting and lints before a pull request:
 

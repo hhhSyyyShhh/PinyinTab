@@ -23,4 +23,4 @@ echo "[4/4] Environment information"
 "$project_dir/target/release/ptab" doctor
 echo "bash: $BASH_VERSION"
 
-echo "PASS: PinyinTab Linux v0.3.0 test suite"
+echo "PASS: PinyinTab Linux test suite"
