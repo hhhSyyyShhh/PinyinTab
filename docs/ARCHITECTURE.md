@@ -28,10 +28,11 @@ Shell 插入真实中文路径
 |---|---|---|
 | 二进制入口 | `src/main.rs` | 读取进程参数并启动库中的 CLI |
 | 命令接口 | `src/cli.rs` | 解析 `ptab` 子命令、过滤模式和退出状态 |
+| 参数分类 | `src/context.rs` | 根据 Shell 单词与光标位置区分程序路径、文件参数、表达式和重定向 |
 | 拼音映射 | `src/mapper.rs` | 将汉字名称生成全拼和首字母，并处理少量多音词组覆盖 |
 | 候选生成 | `src/completion/` | 拆分路径、逐层解析目录、匹配、过滤类型并返回真实候选 |
 | 诊断信息 | `src/diagnostics.rs` | 生成版本与平台诊断文本 |
-| Bash 集成 | `shell/pinyintab.bash` | 读取光标处单词，调用 `ptab complete`，维护并恢复 Bash 补全定义 |
+| Bash 集成 | `shell/pinyintab.bash` | 通过 `complete-command` 传递上下文，维护并恢复参数补全和 `complete -I` 首命令补全 |
 | Zsh 集成 | `shell/pinyintab.zsh` | 调用 Rust 核心并通过 `compadd` 写入文件与目录候选 |
 | 管理入口 | Shell 函数 `ptab` | 提供 `on`、`off`、`status`、`doctor` 和 `version` |
 | 安装与发布 | `install.sh`、`scripts/`、`.github/workflows/` | 用户级安装、卸载、构建归档、CI 与 GitHub Release |
@@ -70,11 +71,14 @@ ceshimulu/neibuwenjian
 
 ## 4. 命令语义
 
-Shell 集成提供三种候选过滤：
+Shell 集成通过 `complete-command <directory> <zero-based-index> <words...>` 共用上下文分类。独立候选接口保留以下过滤模式：
 
 - `--directories`：用于 `cd`、`rmdir` 等只应接收目录的场景。
-- `--files`：用于 Python、Julia、`cat` 等文件参数。
+- `--files`：供显式只需文件的调用方使用。交互式文件参数采用普通路径模式，保留目录以便继续输入下一层。
 - `--java-classes`：用于 `java`，只返回 `.class` 对应的类名并去掉后缀。
+- `--executables`：命令位置的路径，只返回至少带一个 Unix 执行位的常规文件，以及导航目录；最终执行权限与格式仍由操作系统检查。
+
+Bash 5 使用 `complete -I` 接入首命令位置，Zsh 使用 `-command-`；Zsh 的 `-redirect-` 单独处理文件重定向。普通不含斜杠的命令名仍使用原生命令补全，不搜索本地中文文件替代 PATH 命令。两类新增钩子均在 `ptab off` 时恢复。
 
 其余命令使用普通路径候选。该模型不是完整的 Shell 语法分析器，复杂命令需要专门规则，详见 `COMPATIBILITY.md`。
 

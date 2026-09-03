@@ -77,6 +77,9 @@ fn resolve_directory_component(directory: &Path, typed: &str) -> std::io::Result
             // protocol cannot represent them safely, so they are skipped.
             Err(_) => continue,
         };
+        if real_name.chars().any(char::is_control) {
+            continue;
+        }
         if real_name == typed {
             return Ok(real_name);
         }

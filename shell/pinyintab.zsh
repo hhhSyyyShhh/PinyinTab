@@ -4,13 +4,44 @@ typeset -g _pinyintab_binary="${PINYINTAB_BINARY:-$HOME/.local/bin/ptab}"
 typeset -gi _pinyintab_active=0
 typeset -gA _pinyintab_saved_comps
 typeset -g _pinyintab_saved_default=""
+typeset -g _pinyintab_saved_command=""
+typeset -g _pinyintab_saved_redirect=""
 typeset -ga _pinyintab_commands
 _pinyintab_commands=(
   cd python python3 python3.10 python3.11 python3.12 python3.13 python3.14
   cat vim vi nano less head tail
   cp mv rm touch mkdir rmdir java javac julia node ruby perl bash sh
   cargo rustc gcc clang swift swiftc
+  ls stat file wc sort uniq diff du find grep egrep fgrep sed awk gawk
+  chmod chown chgrp ln readlink realpath tee cut tr tar gzip gunzip unzip
+  sudo env command exec source pushd zsh
 )
+(( ${+PINYINTAB_EXTRA_COMMANDS} )) && _pinyintab_commands+=("${PINYINTAB_EXTRA_COMMANDS[@]}")
+
+# Preserve ordinary executable/PATH completion when no path was typed.
+_pinyintab_zsh_command() {
+  if [[ "$PREFIX" != */* ]]; then
+    if [[ -n "$_pinyintab_saved_command" ]]; then
+      "$_pinyintab_saved_command" "$@"
+    else
+      _command_names "$@"
+    fi
+    return
+  fi
+  local _pinyintab_context_filter=--executables
+  _pinyintab_zsh_complete
+}
+
+_pinyintab_zsh_redirect() {
+  # The redirect hook also receives heredoc delimiters and file descriptors.
+  # Only operators whose operand is a path may query the filesystem.
+  case "${compstate[redirect]-}" in
+    '<'|'>'|'>>'|'<>'|'>|'|'&>'|'&>>') ;;
+    *) return 0 ;;
+  esac
+  local _pinyintab_context_filter=--paths
+  _pinyintab_zsh_complete
+}
 
 # Store the longest literal prefix shared by every candidate in REPLY.
 # Zsh calculates insertion text from real filenames, not from their Pinyin
@@ -30,32 +61,22 @@ _pinyintab_common_prefix() {
 }
 
 _pinyintab_zsh_complete() {
-  local current mode candidate command output common_prefix
-  local -a candidates directories files
+  local current candidate output common_prefix cursor
+  local -a candidates directories files request_words
   current="$PREFIX"
-  mode=""
-  command="${words[1]}"
 
   [[ -x "$_pinyintab_binary" ]] || return 0
-  [[ "$command" == "sudo" ]] && command="${words[2]}"
-
-  case "$command" in
-    cd|rmdir)
-      mode="--directories"
-      ;;
-    java)
-      mode="--java-classes"
-      ;;
-    cat|python|python[0-9]*|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
-      mode="--files"
-      ;;
-  esac
-
-  output="$("$_pinyintab_binary" complete "$PWD" "$current" $mode 2>/dev/null)"
+  if [[ -n "${_pinyintab_context_filter-}" ]]; then
+    output="$("$_pinyintab_binary" complete "$PWD" "$current" "$_pinyintab_context_filter" 2>/dev/null)"
+  else
+    request_words=("${words[@]}")
+    cursor=${CURRENT:-${#words[@]}}
+    request_words[$cursor]="$current"
+    output="$("$_pinyintab_binary" complete-command "$PWD" "$((cursor - 1))" "${request_words[@]}" 2>/dev/null)"
+  fi
   [[ -n "$output" ]] || return 0
   candidates=("${(@f)output}")
-  # Returning success with no candidates prevents Zsh from falling back to its
-  # generic file completer and re-introducing a directory for commands like cat.
+  # An empty result must never be passed as a candidate to compadd.
   (( ${#candidates[@]} > 0 )) || return 0
   # -U is required because the real Chinese candidate does not literally start
   # with the pinyin text currently present in PREFIX.
@@ -83,6 +104,7 @@ _pinyintab_zsh_complete() {
   done
   (( ${#files[@]} > 0 )) && compadd -U -f -- "${files[@]}"
   (( ${#directories[@]} > 0 )) && compadd -U -f -S '' -- "${directories[@]}"
+  return 0
 }
 
 ptab() {
@@ -108,6 +130,10 @@ ptab() {
 
       _pinyintab_saved_default="${_comps[-default-]-}"
       _comps[-default-]=_pinyintab_zsh_complete
+      _pinyintab_saved_command="${_comps[-command-]-}"
+      _pinyintab_saved_redirect="${_comps[-redirect-]-}"
+      _comps[-command-]=_pinyintab_zsh_command
+      _comps[-redirect-]=_pinyintab_zsh_redirect
       _pinyintab_active=1
       echo "PinyinTab completion: ON"
       ;;
@@ -125,6 +151,9 @@ ptab() {
 
       unset '_comps[-default-]'
       [[ -n "$_pinyintab_saved_default" ]] && _comps[-default-]="$_pinyintab_saved_default"
+      unset '_comps[-command-]' '_comps[-redirect-]'
+      [[ -n "$_pinyintab_saved_command" ]] && _comps[-command-]="$_pinyintab_saved_command"
+      [[ -n "$_pinyintab_saved_redirect" ]] && _comps[-redirect-]="$_pinyintab_saved_redirect"
       _pinyintab_active=0
       echo "PinyinTab completion: OFF"
       ;;

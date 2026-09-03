@@ -9,6 +9,27 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.4.1] - 2026-09-03
+
+### Fixed
+
+- Connected command-position completion for `./`, `../`, and absolute executable paths in Bash 5 and Zsh, including common wrappers and pipelines.
+- Kept directories as intermediate path candidates for file commands.
+- Centralized command context classification; left common pattern, expression, permission, module and numeric operands unchanged.
+- Added native-tool bindings, Zsh file-redirection handling and reversible command-position hooks.
+- Skipped filenames containing control characters in the line-based protocol.
+- Added timeouts and retries to all online-installer downloads, including checksums, and cleaned staging files after successful installation.
+
+### Testing
+
+- Added executable-permission, symlink, control-character, command-context and CLI regressions.
+- Added real PTY Tab-key tests for Bash/Zsh: buffer insertion, spaces, harmless executable invocation and off restoration.
+
+### Compatibility
+
+- Release platforms and the default-off policy remain unchanged.
+- `PINYINTAB_EXTRA_COMMANDS` optionally registers local-path tools; complex option grammars and remote paths still require adapters.
+
 ## [0.4.0] - 2026-09-02
 
 ### Changed

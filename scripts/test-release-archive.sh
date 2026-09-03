@@ -23,6 +23,8 @@ export PINYINTAB_INSTALL_ROOT="$HOME/.local"
 export PINYINTAB_RELEASE_FIXTURE="$temporary_root/fixture"
 mkdir -p "$HOME" "$PINYINTAB_RELEASE_FIXTURE"
 printf '%s\n' 'print("release archive test")' >"$PINYINTAB_RELEASE_FIXTURE/测试.py"
+printf '%s\n' '#!/bin/sh' 'printf "PTAB_RELEASE_EXEC_OK\n"' >"$PINYINTAB_RELEASE_FIXTURE/运行程序"
+chmod +x "$PINYINTAB_RELEASE_FIXTURE/运行程序"
 
 "$package_dir/install.sh" --shell bash >/dev/null
 
@@ -46,5 +48,11 @@ candidates="$(bash --noprofile --norc -c '
     exit 1
 }
 
+executable_candidate="$("$HOME/.local/bin/ptab" complete-command "$PINYINTAB_RELEASE_FIXTURE" 0 ./yunxing)"
+[[ "$executable_candidate" == './运行程序' ]] || {
+    echo "FAIL: installed executable-path completion" >&2
+    exit 1
+}
+(cd "$PINYINTAB_RELEASE_FIXTURE" && "$executable_candidate")
 "$HOME/.local/bin/ptab" doctor
 echo "PASS: PinyinTab release archive on $(uname -s) $(uname -m)"

@@ -108,6 +108,7 @@ ptab version
 
 ```bash
 cd ceshimulu<Tab>
+./yunxingchengxu<Tab>
 cat xiangmushuoming.md<Tab>
 python3 ceshi.py<Tab>
 julia chengfakoujuebiao.jl<Tab>
@@ -116,6 +117,8 @@ java chengfakoujuebiao<Tab>
 ```
 
 补全后命令行中出现的是磁盘上的真实中文名称。拼音只在按 Tab 时作为查询使用，不是按 Enter 后仍然有效的虚拟文件名。
+
+`./`、`../`、绝对路径位于命令位置时，会补全可执行文件和可继续进入的目录。文件仍需执行权限，以及有效的二进制格式或脚本解释器声明；Tab 本身不会执行文件。文件参数也会保留目录候选，方便逐级输入路径。详见[命令上下文测试范围](docs/COMPATIBILITY.md#v041-命令上下文回归范围)。
 
 ## 兼容范围
 

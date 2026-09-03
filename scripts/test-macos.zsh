@@ -80,8 +80,8 @@ compadd() { captured_compadd=("$@") }
 typeset -ga captured_message
 _message() { captured_message=("$@") }
 cd "$PINYINTAB_MACOS_TEST_FIXTURE"
-PREFIX=nihao
-words=(cat nihao)
+PREFIX=does_not_exist
+words=(cat does_not_exist)
 captured_compadd=()
 _pinyintab_zsh_complete
 (( ${#captured_compadd[@]} == 0 )) || {
@@ -164,8 +164,14 @@ autoload -Uz compinit
 compinit -d "$PINYINTAB_MACOS_TEST_FIXTURE/.zcompdump"
 compdef _original_pinyintab_test python3
 typeset original="${_comps[python3]}"
+typeset original_command="${_comps[-command-]-}"
+typeset original_redirect="${_comps[-redirect-]-}"
 ptab on >/dev/null
 ptab off >/dev/null
+[[ "${_comps[-command-]-}" == "$original_command" && "${_comps[-redirect-]-}" == "$original_redirect" ]] || {
+  print -u2 -- "FAIL: command/redirection hooks were not restored"
+  exit 1
+}
 [[ "${_comps[python3]}" == "$original" ]] || {
   print -u2 -- "FAIL: ptab off did not restore the previous Zsh completer"
   exit 1

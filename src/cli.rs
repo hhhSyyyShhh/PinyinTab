@@ -67,6 +67,34 @@ where
                 }
             }
         }
+        Some("complete-command") => {
+            let Some(directory) = args.next().map(PathBuf::from) else {
+                return ExitCode::from(2);
+            };
+            let Some(index) = args.next().and_then(|v| v.into_string().ok())
+                .and_then(|v| v.parse::<usize>().ok()) else {
+                return ExitCode::from(2);
+            };
+            let words: Vec<String> = match args.map(|v| v.into_string()).collect() {
+                Ok(words) => words,
+                Err(_) => return ExitCode::from(2),
+            };
+            let Some(filter) = crate::context::path_context(&words, index) else {
+                return ExitCode::SUCCESS;
+            };
+            match complete(&directory, &words[index], filter) {
+                Ok(candidates) => {
+                    for candidate in candidates {
+                        println!("{candidate}");
+                    }
+                    ExitCode::SUCCESS
+                }
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    ExitCode::FAILURE
+                }
+            }
+        }
         _ => {
             usage(&program);
             ExitCode::from(2)
@@ -80,6 +108,7 @@ fn entry_filter(flag: Option<&OsStr>) -> EntryFilter {
         Some(value) if value == OsStr::new("--directories") => EntryFilter::Directories,
         Some(value) if value == OsStr::new("--files") => EntryFilter::Files,
         Some(value) if value == OsStr::new("--java-classes") => EntryFilter::JavaClasses,
+        Some(value) if value == OsStr::new("--executables") => EntryFilter::Executables,
         _ => EntryFilter::Any,
     }
 }
@@ -88,7 +117,7 @@ fn entry_filter(flag: Option<&OsStr>) -> EntryFilter {
 /// intentionally small because it runs on every Tab press.
 fn usage(program: &OsStr) {
     eprintln!(
-        "PinyinTab — type Pinyin, press Tab, get the real Chinese path.\n\nUsage:\n  {} doctor\n  {} version\n  {} alias <name>\n  {} complete <directory> <typed-path> [--directories|--files|--java-classes]",
+        "PinyinTab — type Pinyin, press Tab, get the real Chinese path.\n\nUsage:\n  {} doctor\n  {} version\n  {} alias <name>\n  {} complete <directory> <typed-path> [--directories|--files|--java-classes|--executables]\n  complete-command <directory> <word-index> <words...>",
         program.to_string_lossy(),
         program.to_string_lossy(),
         program.to_string_lossy(),
@@ -117,5 +146,9 @@ mod tests {
             EntryFilter::JavaClasses
         );
         assert_eq!(entry_filter(None), EntryFilter::Any);
+        assert_eq!(
+            entry_filter(Some(OsStr::new("--executables"))),
+            EntryFilter::Executables
+        );
     }
 }

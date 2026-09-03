@@ -108,6 +108,7 @@ Use normal commands and press <kbd>Tab</kbd> on the Pinyin path:
 
 ```bash
 cd ceshimulu<Tab>
+./yunxingchengxu<Tab>
 cat xiangmushuoming.md<Tab>
 python3 ceshi.py<Tab>
 julia chengfakoujuebiao.jl<Tab>
@@ -116,6 +117,8 @@ java chengfakoujuebiao<Tab>
 ```
 
 After completion, the command line contains the real Chinese name. Pinyin is a query used at Tab time, not a virtual filename that remains valid after Enter.
+
+Command-position completion (`./`, `../`, absolute paths) returns executable files and navigable directories. Files still need execute permission and a valid binary format or script shebang; Tab never runs them. Directory candidates remain available for entering paths one component at a time. See the [tested command contexts](docs/COMPATIBILITY.md#v041-命令上下文回归范围).
 
 ## Compatibility
 

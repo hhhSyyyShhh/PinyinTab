@@ -3,53 +3,34 @@
 _pinyintab_binary="${PINYINTAB_BINARY:-$HOME/.local/bin/ptab}"
 _pinyintab_active=0
 _pinyintab_saved_default=""
+_pinyintab_saved_initial=""
 _pinyintab_saved_specs=()
 _pinyintab_commands=(
     cd python python3 python3.10 python3.11 python3.12 python3.13 python3.14
     cat vim vi nano less head tail
     cp mv rm touch mkdir rmdir java javac julia node ruby perl bash sh
     cargo rustc gcc clang swift swiftc
+    ls stat file wc sort uniq diff du find grep egrep fgrep sed awk gawk
+    chmod chown chgrp ln readlink realpath tee cut tr tar gzip gunzip unzip
+    sudo env command exec source pushd zsh
 )
+# Additional local tools are opt-in; no installation or command execution occurs.
+if declare -p PINYINTAB_EXTRA_COMMANDS >/dev/null 2>&1; then
+    _pinyintab_commands+=("${PINYINTAB_EXTRA_COMMANDS[@]}")
+fi
 
 _pinyintab_complete() {
-    local current candidate mode command index token
+    local current candidate
     current="${COMP_WORDS[COMP_CWORD]}"
-    mode=""
-    command="${COMP_WORDS[0]}"
     COMPREPLY=()
 
     if [[ ! -x "$_pinyintab_binary" ]]; then
         return 0
     fi
 
-    for ((index = COMP_CWORD - 1; index >= 0; index--)); do
-        token="${COMP_WORDS[index]}"
-        case "$token" in
-            '|'|'||'|'&&'|';')
-                command="${COMP_WORDS[index + 1]}"
-                break
-                ;;
-        esac
-    done
-    if [[ "$command" == "sudo" && $((index + 2)) -le $COMP_CWORD ]]; then
-        command="${COMP_WORDS[index + 2]}"
-    fi
-
-    case "$command" in
-        cd|rmdir)
-            mode="--directories"
-            ;;
-        java)
-            mode="--java-classes"
-            ;;
-        cat|python|python[0-9]*|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
-            mode="--files"
-            ;;
-    esac
-
     while IFS= read -r candidate; do
         COMPREPLY[${#COMPREPLY[@]}]="$candidate"
-    done < <("$_pinyintab_binary" complete "$PWD" "$current" $mode 2>/dev/null)
+    done < <("$_pinyintab_binary" complete-command "$PWD" "$COMP_CWORD" "${COMP_WORDS[@]}" 2>/dev/null)
     compopt -o filenames 2>/dev/null || true
     for candidate in "${COMPREPLY[@]-}"; do
         if [[ "$candidate" == */ ]]; then
@@ -78,9 +59,15 @@ ptab() {
 
             if help complete 2>/dev/null | grep -q -- '-D'; then
                 _pinyintab_saved_default="$(complete -p -D 2>/dev/null || true)"
-                complete -F _pinyintab_complete -D
+                complete -o bashdefault -o default -F _pinyintab_complete -D
             fi
-            complete -F _pinyintab_complete "${_pinyintab_commands[@]}"
+            # -D applies to arguments, not the command word. Bash 5's -I hook
+            # is needed for ./pinyin<Tab>, including after a pipeline delimiter.
+            if help complete 2>/dev/null | grep -q -- '-I'; then
+                _pinyintab_saved_initial="$(complete -p -I 2>/dev/null || true)"
+                complete -o bashdefault -o default -F _pinyintab_complete -I
+            fi
+            complete -o bashdefault -o default -F _pinyintab_complete "${_pinyintab_commands[@]}"
             _pinyintab_active=1
             echo "PinyinTab completion: ON"
             ;;
@@ -94,6 +81,12 @@ ptab() {
                 complete -r -D 2>/dev/null || true
                 if [[ -n "$_pinyintab_saved_default" ]]; then
                     eval "$_pinyintab_saved_default"
+                fi
+            fi
+            if help complete 2>/dev/null | grep -q -- '-I'; then
+                complete -r -I 2>/dev/null || true
+                if [[ -n "$_pinyintab_saved_initial" ]]; then
+                    eval "$_pinyintab_saved_initial"
                 fi
             fi
 

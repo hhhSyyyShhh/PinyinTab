@@ -129,11 +129,11 @@ COMP_CWORD=1
 _pinyintab_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "测试.py"
 
-# cat accepts files, so it must not turn a directory into `你好/`.
+# Directories are valid intermediate components even for file-reading commands.
 COMP_WORDS=(cat nihao)
 COMP_CWORD=1
 _pinyintab_complete
-[[ -z "${COMPREPLY[*]-}" ]] || fail "cat completion returned a directory"
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "你好/"
 
 COMP_WORDS=(cd nihao)
 COMP_CWORD=1
@@ -175,8 +175,18 @@ contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "测试.py"
 # Enabling and disabling PinyinTab must restore a command's previous completer.
 complete -W 'original-value' python3
 before_spec="$(complete -p python3)"
+if help complete 2>/dev/null | grep -q -- '-I'; then
+    complete -W 'original-command' -I
+    before_initial="$(complete -p -I)"
+fi
 ptab on >/dev/null
+if help complete 2>/dev/null | grep -q -- '-I'; then
+    [[ "$(complete -p -I)" == *'_pinyintab_complete'* ]] || fail "initial command hook missing"
+fi
 ptab off >/dev/null
+if help complete 2>/dev/null | grep -q -- '-I'; then
+    [[ "$(complete -p -I)" == "$before_initial" ]] || fail "initial command hook not restored"
+fi
 after_spec="$(complete -p python3)"
 [[ "$before_spec" == "$after_spec" ]] || fail "ptab off did not restore previous completion"
 

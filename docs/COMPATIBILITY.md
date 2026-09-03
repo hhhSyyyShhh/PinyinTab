@@ -46,6 +46,34 @@ bash install-online.sh --enable-on-startup
 
 ## 不是“所有命令都无条件支持”
 
+### v0.4.1 命令上下文回归范围
+
+| 上下文 | 示例 | 处理方式 |
+|---|---|---|
+| 直接执行路径 | `./yunxing<Tab>`、`../yunxing<Tab>`、`/tmp/yunxing<Tab>` | 可执行文件和导航目录，保留路径前缀 |
+| 命令链 | `true && ./yunxing<Tab>`、`printf ok \| ./yunxing<Tab>` | 在新命令位置使用可执行过滤 |
+| 常见包装器 | `sudo -u root ./yunxing<Tab>`、`env LANG=C ./yunxing<Tab>` | 识别已知包装器参数后判断实际命令 |
+| 本地路径 | `ls/stat/file/wc/sort/uniq/diff/du/cp/mv/rm/ln/readlink/realpath/tee` 的路径参数 | 文件与导航目录 |
+| 模式参数 | `grep 模式 文件`、`sed 表达式 文件`、`awk 程序 文件` | 模式不转换，文件可补全；常见 `-e/-f` 另行区分 |
+| 权限与查找 | `chmod +x 文件`、`chown root 文件`、`find 目录` | 权限/用户不转成文件；find 谓词区域不自动转换 |
+| 数值与分隔符 | `head -n 10`、`cut -d ,`、`sort -k 1`、`tr 集合1 集合2` | 已知非路径位置不生成拼音候选 |
+| 文件重定向 | `cat < 文件`、`printf ok > 文件` | 补全已存在路径，不凭空创建中文文件 |
+| 解释器 | `python3 文件` 与 `python3 -m 模块` | 文件可以补全，模块名和内联代码不转换 |
+
+`./` 是相对路径前缀，不是单独的命令。仍需按 Tab；拼音直接回车不会自动改写。执行位检查跟随符号链接，但不保证目标格式、ACL、挂载选项或解释器可执行。
+
+首命令补全在 Linux Bash 5.x 和 macOS Zsh 上验证；macOS 自带 Bash 3.2 缺少 `complete -I`，只保留已有参数补全能力。
+
+扩展工具可在加载集成脚本之前设置 Shell 数组：
+
+```bash
+PINYINTAB_EXTRA_COMMANDS=(my-local-tool another-tool)
+source "$HOME/.local/share/pinyintab/pinyintab.bash" # Zsh 使用 .zsh
+ptab on
+```
+
+这只为普通本地路径参数显式注册补全，不理解工具的子命令或专用语言。复杂工具应增加 `src/context.rs` 适配和回归测试；启用期间会接管所列命令，关闭时恢复，不宣称与所有第三方补全器完全叠加。
+
 Tab 补全由 Shell、命令自己的补全器以及 PinyinTab 共同决定。下列情况需要单独设计，不能用一个通用文件扫描规则保证正确：
 
 | 场景 | 原因 |
@@ -78,7 +106,7 @@ Bash 集成会在 `|`、`||`、`&&` 和 `;` 后重新确定当前命令，因此
 
 PinyinTab 按操作系统返回的真实 Unicode 名称工作，不负责 Unicode 正规化转换。macOS 与 Linux 对组合字符的存储可能不同。无法转换为 UTF-8 的 Unix 文件名当前会被跳过。
 
-符号链接会按目录读取结果参与候选；权限不足、目录在扫描期间被删除等错误不会被伪造成有效候选。
+符号链接会按目录读取结果参与候选；权限不足、目录在扫描期间被删除等错误不会被伪造成有效候选。含控制字符（包括换行）的名称会被跳过，防止行分隔协议把一个文件名拆成多个候选。
 
 ## 新平台进入正式支持的条件
 
