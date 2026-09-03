@@ -142,7 +142,9 @@ pub fn path_context(words: &[String], index: usize) -> Option<EntryFilter> {
 }
 
 fn is_assignment(word: &str) -> bool {
-    let Some((name, _)) = word.split_once('=') else { return false; };
+    let Some((name, _)) = word.split_once('=') else {
+        return false;
+    };
     !name.is_empty()
         && name
             .chars()

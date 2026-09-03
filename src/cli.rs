@@ -71,8 +71,11 @@ where
             let Some(directory) = args.next().map(PathBuf::from) else {
                 return ExitCode::from(2);
             };
-            let Some(index) = args.next().and_then(|v| v.into_string().ok())
-                .and_then(|v| v.parse::<usize>().ok()) else {
+            let Some(index) = args
+                .next()
+                .and_then(|v| v.into_string().ok())
+                .and_then(|v| v.parse::<usize>().ok())
+            else {
                 return ExitCode::from(2);
             };
             let words: Vec<String> = match args.map(|v| v.into_string()).collect() {
