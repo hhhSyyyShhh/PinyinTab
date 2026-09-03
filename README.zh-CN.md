@@ -93,6 +93,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
 ```
 
 卸载器会删除 PinyinTab 写入的 Shell 配置块和 `~/.local` 下的安装文件，并保留安装时生成的配置备份。
+下载的压缩包和手动解压目录不会自动删除；确认没有个人文件后可自行清理。卸载后重新打开终端，以清除当前会话已加载的函数。
 
 ## 使用
 
@@ -102,7 +103,12 @@ ptab off      # 关闭并恢复原补全器
 ptab status   # 查看 Shell 集成状态
 ptab doctor   # 查看版本、系统、架构、Shell 和状态
 ptab version
+ptab --help   # 命令、选项、示例与使用边界（默认英文）
+ptab help zh  # 中文帮助
 ```
+
+帮助不改变补全状态。高级诊断接口见 `ptab help advanced zh`；
+`on/off/status` 必须由当前终端加载的 Shell 集成执行，不能通过独立子进程改变父 Shell。
 
 启用后照常输入命令，并在拼音路径处按 <kbd>Tab</kbd>：
 

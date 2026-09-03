@@ -1,0 +1,36 @@
+Advanced interfaces (for diagnostics and shell integration)
+
+Usage:
+  ptab alias <name>
+  ptab complete <directory> <typed-path> [filter]
+  ptab complete-command <directory> <word-index> <words...>
+
+Commands:
+  alias             Print the real name, full Pinyin and initials
+                    Computes aliases only; the named file need not exist
+  complete          Return real path candidates from a directory
+  complete-command  Classify a tokenized command and return path candidates
+                    word-index is zero-based; words are separate arguments
+
+Filters for complete (choose at most one):
+  --directories     Directories only
+  --files           Files only
+  --java-classes    Local .class files as class names (without .class)
+  --executables     Executable files and navigable directories
+  No filter         Files and directories
+
+Examples:
+  ptab alias '测试.py'
+  ptab complete . ce --files
+  ptab complete-command . 0 ./ce
+  ptab complete-command . 1 cat ce
+
+Output and exit status:
+  Completion writes one real candidate per line, without decoration.
+  No matches is a successful empty result. Never evaluate output as shell code.
+  0 = success (also no matches); 1 = operation failed; 2 = invalid usage.
+  Help goes to standard output; errors go to standard error.
+  Filenames containing control characters are excluded from this protocol.
+
+These commands do not enable completion or change the current shell.
+Use "ptab help" for everyday commands or "ptab help advanced zh" for Chinese.

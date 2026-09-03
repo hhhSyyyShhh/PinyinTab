@@ -9,6 +9,29 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.4.2] - 2026-09-03
+
+### Added
+
+- Added structured help with command descriptions, options, examples and scope notes.
+- Added explicit Chinese help (`ptab help zh`) and a separate advanced protocol reference (`ptab help advanced [en|zh]`).
+
+### Fixed
+
+- Unified Bash, Zsh and binary help through one versioned reference; normal help now uses stdout and exits successfully.
+- Added actionable stderr diagnostics for unknown commands and invalid help arguments.
+- Rejected extra arguments to shell state and informational commands before changing state.
+- Exposed the documented `complete-command` diagnostic interface through both shell wrappers.
+
+### Testing
+
+- Added help selection/rendering unit tests, CLI stream/exit-status tests, and shell help parity/state-preservation tests.
+- Validated help from installed Release archives on the existing platform matrix.
+
+### Compatibility
+
+- Completion matching, release targets and the default-off installation policy are unchanged.
+
 ## [0.4.1] - 2026-09-03
 
 ### Fixed

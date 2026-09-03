@@ -42,6 +42,15 @@ _pinyintab_complete() {
 
 ptab() {
     local command spec index
+    # Shell state commands accept no operands; reject typos before changing state.
+    case "${1:-}" in
+        on|off|status|doctor|version|--version|-V)
+            if [[ $# -gt 1 ]]; then
+                printf '%s\n' "error: $1 does not accept extra arguments" "Try 'ptab --help'." >&2
+                return 2
+            fi
+            ;;
+    esac
     case "${1:-}" in
         on)
             if [[ "$_pinyintab_active" == 1 ]]; then
@@ -117,14 +126,16 @@ ptab() {
         version|--version|-V)
             "$_pinyintab_binary" version
             ;;
-        alias|complete)
+        alias|complete|complete-command)
             "$_pinyintab_binary" "$@"
             ;;
         help|--help|-h|'')
-            echo "Usage: ptab on | off | status | doctor | version"
+            # One binary-owned reference keeps help consistent across both shells.
+            if [[ $# -gt 0 ]]; then shift; fi
+            "$_pinyintab_binary" help "$@"
             ;;
         *)
-            echo "Usage: ptab on | off | status | doctor | version" >&2
+            printf '%s\n' "error: unknown command: $1" "Try 'ptab --help'." >&2
             return 2
             ;;
     esac

@@ -34,6 +34,18 @@ status="$(bash --noprofile --norc -c 'source "$HOME/.bashrc"; ptab status')"
     exit 1
 }
 
+# Validate the installed text, not just the source checkout's helper.
+help_text="$(bash --noprofile --norc -c 'source "$HOME/.bashrc"; ptab --help')"
+[[ "$help_text" == *'Shell commands'* && "$help_text" == *'Examples:'* ]] || {
+    echo "FAIL: installed help page is incomplete" >&2
+    exit 1
+}
+chinese_help="$("$HOME/.local/bin/ptab" help zh)"
+[[ "$chinese_help" == *'开启当前终端'* ]] || {
+    echo "FAIL: installed Chinese help is missing" >&2
+    exit 1
+}
+
 candidates="$(bash --noprofile --norc -c '
     source "$HOME/.bashrc"
     ptab on >/dev/null

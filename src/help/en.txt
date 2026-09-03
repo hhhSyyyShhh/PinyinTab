@@ -1,0 +1,38 @@
+Type Pinyin, press Tab, insert the real Chinese path.
+
+Usage:
+  ptab <command>
+  ptab help [advanced] [en|zh]
+
+Shell commands (require the Bash/Zsh integration to be loaded):
+  on                Enable completion in the current shell
+  off               Disable it and restore previous completers; not uninstall
+  status            Show whether completion is enabled in this shell
+
+Commands:
+  doctor            Show version, platform and architecture
+                    The shell integration also reports shell and ON/OFF state
+  version           Show the program version
+  help              Show this page (English); use "ptab help zh" for Chinese
+
+Options:
+  -h, --help        Show help
+  -V, --version     Show the program version
+
+Examples:
+  ptab on
+  cd ceshimulu<Tab>
+  python3 ceshi.py<Tab>
+  ./ceshi<Tab>
+  ptab off
+
+Notes:
+  <Tab> means press the Tab key; do not type the literal characters.
+  Completion inserts a real path. It never renames files or runs candidates.
+  ./ completion requires an executable file (or a directory to navigate).
+  on/off affect this shell only. Normal installs start OFF in new shells.
+  The optional startup flag and Oh My Zsh plugin can explicitly opt in.
+
+Advanced interfaces:
+  ptab help advanced       Alias queries and the shell completion protocol
+  ptab help advanced zh    The same reference in Chinese

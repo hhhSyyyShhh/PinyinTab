@@ -52,6 +52,8 @@ jobs:
         run: ./scripts/test-oh-my-zsh.zsh
       - name: Real terminal Tab regression tests
         run: python3 scripts/test-interactive.py ${{ runner.os == 'macOS' && 'zsh' || 'bash' }}
+      - name: Help and diagnostic contract tests
+        run: python3 scripts/test-help.py ${{ runner.os == 'macOS' && 'zsh' || 'bash' }}
 
   linux-compatibility:
     name: Linux release compatibility

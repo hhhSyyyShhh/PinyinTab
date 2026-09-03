@@ -32,12 +32,15 @@ Shell 插入真实中文路径
 | 拼音映射 | `src/mapper.rs` | 将汉字名称生成全拼和首字母，并处理少量多音词组覆盖 |
 | 候选生成 | `src/completion/` | 拆分路径、逐层解析目录、匹配、过滤类型并返回真实候选 |
 | 诊断信息 | `src/diagnostics.rs` | 生成版本与平台诊断文本 |
+| 帮助参考 | `src/help.rs`、`src/help/` | 统一三种入口的版本化帮助、中文文本与高级接口说明 |
 | Bash 集成 | `shell/pinyintab.bash` | 通过 `complete-command` 传递上下文，维护并恢复参数补全和 `complete -I` 首命令补全 |
 | Zsh 集成 | `shell/pinyintab.zsh` | 调用 Rust 核心并通过 `compadd` 写入文件与目录候选 |
 | 管理入口 | Shell 函数 `ptab` | 提供 `on`、`off`、`status`、`doctor` 和 `version` |
 | 安装与发布 | `install.sh`、`scripts/`、`.github/workflows/` | 用户级安装、卸载、构建归档、CI 与 GitHub Release |
 
 安装器默认只在 Shell 启动文件中加载管理函数，不自动开启补全。`ptab on` 是当前 Shell 的显式状态切换；只有 `--enable-on-startup` 会把自动启用命令写入托管配置块。
+
+管理函数把帮助请求转交给同一二进制参考页。`ptab --help` 为英文，`ptab help zh` 为中文，`ptab help advanced [en|zh]` 显示底层协议。帮助写标准输出并返回 0；用法错误写标准错误并返回 2，不混入候选数据流。帮助请求不触发 `on/off`，有多余操作数的状态命令也会在改变状态前被拒绝。
 
 ## 3. 匹配模型
 

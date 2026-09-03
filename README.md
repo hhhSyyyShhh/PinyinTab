@@ -93,6 +93,7 @@ Run this from a source checkout or extracted release:
 ```
 
 The uninstaller removes PinyinTab's marked Shell configuration block and files under `~/.local`. It preserves the configuration backup created during installation.
+Downloaded archives and manually extracted directories are not removed automatically. Remove them separately after checking for personal files, and restart the terminal to clear any loaded shell function.
 
 ## Usage
 
@@ -102,7 +103,13 @@ ptab off      # restore the previous completers
 ptab status   # show shell integration state
 ptab doctor   # show version, platform, architecture, shell, and state
 ptab version
+ptab --help   # commands, options, examples, and scope notes
+ptab help zh  # Chinese help
 ```
+
+Help does not change completion state. Use `ptab help advanced` for diagnostic
+interfaces. The `on/off/status` commands require the integration loaded in the
+current shell; a standalone child process cannot change its parent shell.
 
 Use normal commands and press <kbd>Tab</kbd> on the Pinyin path:
 

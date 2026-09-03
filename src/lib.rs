@@ -10,6 +10,7 @@ pub mod cli;
 pub mod completion;
 pub mod context;
 mod diagnostics;
+mod help;
 mod mapper;
 
 #[cfg(test)]

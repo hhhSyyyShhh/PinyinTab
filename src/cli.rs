@@ -17,8 +17,23 @@ where
     I: IntoIterator<Item = OsString>,
 {
     let mut args = args.into_iter();
-    let program = args.next().unwrap_or_default();
-    let command = args.next().and_then(|value| value.into_string().ok());
+    // The first item is the executable name, not a user argument.
+    let _program = args.next();
+    let command = match args.next() {
+        Some(value) => match value.into_string() {
+            Ok(value) => Some(value),
+            Err(_) => return usage_error("command name must be valid UTF-8"),
+        },
+        None => None,
+    };
+
+    if matches!(
+        command.as_deref(),
+        Some("doctor" | "version" | "--version" | "-V")
+    ) && args.next().is_some()
+    {
+        return usage_error("this command does not accept extra arguments");
+    }
 
     match command.as_deref() {
         Some("doctor") => {
@@ -29,14 +44,10 @@ where
             println!("{}", version_report());
             ExitCode::SUCCESS
         }
-        Some("help") | Some("--help") | Some("-h") => {
-            usage(&program);
-            ExitCode::SUCCESS
-        }
+        Some("help") | Some("--help") | Some("-h") | None => show_help(&args.collect::<Vec<_>>()),
         Some("alias") => {
             let Some(name) = args.next().and_then(|value| value.into_string().ok()) else {
-                usage(&program);
-                return ExitCode::from(2);
+                return usage_error("expected: ptab alias <name>");
             };
             let aliases = NameMapper.aliases(&name);
             println!("real: {name}");
@@ -46,8 +57,7 @@ where
         }
         Some("complete") => {
             let Some(directory) = args.next().map(PathBuf::from) else {
-                usage(&program);
-                return ExitCode::from(2);
+                return usage_error("expected: ptab complete <directory> <typed-path> [filter]");
             };
             let typed = args
                 .next()
@@ -69,18 +79,20 @@ where
         }
         Some("complete-command") => {
             let Some(directory) = args.next().map(PathBuf::from) else {
-                return ExitCode::from(2);
+                return usage_error(
+                    "expected: ptab complete-command <directory> <word-index> <words...>",
+                );
             };
             let Some(index) = args
                 .next()
                 .and_then(|v| v.into_string().ok())
                 .and_then(|v| v.parse::<usize>().ok())
             else {
-                return ExitCode::from(2);
+                return usage_error("word-index must be a non-negative integer");
             };
             let words: Vec<String> = match args.map(|v| v.into_string()).collect() {
                 Ok(words) => words,
-                Err(_) => return ExitCode::from(2),
+                Err(_) => return usage_error("command words must be valid UTF-8"),
             };
             let Some(filter) = crate::context::path_context(&words, index) else {
                 return ExitCode::SUCCESS;
@@ -98,10 +110,10 @@ where
                 }
             }
         }
-        _ => {
-            usage(&program);
-            ExitCode::from(2)
-        }
+        Some("on" | "off" | "status") => usage_error(
+            "on/off/status require the Bash/Zsh integration to be loaded in the current shell",
+        ),
+        Some(unknown) => usage_error(&format!("unknown command: {unknown:?}")),
     }
 }
 
@@ -116,16 +128,21 @@ fn entry_filter(flag: Option<&OsStr>) -> EntryFilter {
     }
 }
 
-/// Print concise CLI usage. The shell-facing completion protocol remains
-/// intentionally small because it runs on every Tab press.
-fn usage(program: &OsStr) {
-    eprintln!(
-        "PinyinTab — type Pinyin, press Tab, get the real Chinese path.\n\nUsage:\n  {} doctor\n  {} version\n  {} alias <name>\n  {} complete <directory> <typed-path> [--directories|--files|--java-classes|--executables]\n  complete-command <directory> <word-index> <words...>",
-        program.to_string_lossy(),
-        program.to_string_lossy(),
-        program.to_string_lossy(),
-        program.to_string_lossy()
-    );
+/// Help is successful output, not a diagnostic; it must be pipeable.
+fn show_help(args: &[OsString]) -> ExitCode {
+    match crate::help::render(args) {
+        Ok(text) => {
+            print!("{text}");
+            ExitCode::SUCCESS
+        }
+        Err(message) => usage_error(message),
+    }
+}
+
+/// Keep usage errors short and out of the completion candidate stream.
+fn usage_error(message: &str) -> ExitCode {
+    eprintln!("error: {message}\nTry 'ptab --help' or 'ptab help advanced'.");
+    ExitCode::from(2)
 }
 
 #[cfg(test)]

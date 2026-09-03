@@ -1,0 +1,36 @@
+高级接口（用于诊断与 Shell 集成）
+
+用法：
+  ptab alias <name>
+  ptab complete <directory> <typed-path> [filter]
+  ptab complete-command <directory> <word-index> <words...>
+
+命令：
+  alias             显示真实名称、全拼与首字母
+                    仅计算别名，不要求对应文件已经存在
+  complete          返回指定目录中的真实路径候选
+  complete-command  根据已分词的命令判断路径位置，并返回候选
+                    word-index 从 0 开始；每个词是独立参数
+
+complete 的过滤选项（最多选一个）：
+  --directories     仅目录
+  --files           仅文件
+  --java-classes    当前路径的 .class 文件转为类名，不保留 .class
+  --executables     具有执行位的文件及可逐级导航的目录
+  不加过滤选项      文件与目录
+
+示例：
+  ptab alias '测试.py'
+  ptab complete . ce --files
+  ptab complete-command . 0 ./ce
+  ptab complete-command . 1 cat ce
+
+输出与退出状态：
+  补全结果每行一个真实候选，不添加说明或颜色。
+  没有候选时返回成功且输出为空。不要把输出当作 Shell 代码执行。
+  0 表示成功（包括无候选）；1 表示操作失败；2 表示用法错误。
+  正常帮助写入标准输出；错误写入标准错误。
+  此协议不返回名称中含控制字符的文件。
+
+这些接口不会开启补全或改变当前终端状态。
+日常命令帮助请使用 ptab help zh。

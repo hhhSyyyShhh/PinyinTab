@@ -1,0 +1,38 @@
+中文路径拼音补全：输入拼音，按 Tab，插入真实中文路径。
+
+用法：
+  ptab <command>
+  ptab help [advanced] [en|zh]
+
+Shell 命令（需要先加载 Bash/Zsh 集成脚本）：
+  on                开启当前终端的拼音补全
+  off               关闭补全并恢复原补全器；不会卸载程序
+  status            查看当前终端的补全启用状态
+
+命令：
+  doctor            显示版本、系统与架构
+                    通过 Shell 集成调用时，还显示 Shell 与 ON/OFF 状态
+  version           显示程序版本
+  help              显示默认英文帮助；中文帮助用 ptab help zh
+
+选项：
+  -h, --help        显示帮助信息
+  -V, --version     显示程序版本
+
+示例：
+  ptab on
+  cd ceshimulu<Tab>
+  python3 ceshi.py<Tab>
+  ./ceshi<Tab>
+  ptab off
+
+说明：
+  <Tab> 表示按键盘上的 Tab 键，不是输入这些字符。
+  补全只插入真实路径，不会改名或自动执行候选。
+  ./ 补全要求文件具有执行位；也会保留供逐级导航的目录。
+  on/off 只影响当前终端。普通安装的新终端默认关闭补全。
+  自动启动选项和 Oh My Zsh 插件入口属于用户明确选择的启用方式。
+
+高级接口：
+  ptab help advanced       查看拼音查询与 Shell 补全协议
+  ptab help advanced zh    查看高级接口的中文说明
