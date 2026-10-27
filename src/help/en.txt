@@ -33,6 +33,14 @@ Notes:
   on/off affect this shell only. Normal installs start OFF in new shells.
   The optional startup flag and Oh My Zsh plugin can explicitly opt in.
 
+Language selection (Bash 5 / Zsh, while completion is ON):
+  Tab               Prefer non-Chinese names; use Chinese if none match
+  Ctrl+X, then c    Complete Chinese names, before or immediately after Tab
+  Ctrl+X, then e    Complete non-Chinese names, or switch back after c
+  On Mac use Control, not Command. These are sequential key presses.
+  Exact real names stay unchanged; a space starts the next argument.
+  Multiple candidates still require refinement; the plugin does not guess.
+
 Advanced interfaces:
   ptab help advanced       Alias queries and the shell completion protocol
   ptab help advanced zh    The same reference in Chinese

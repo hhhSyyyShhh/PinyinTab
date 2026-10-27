@@ -93,7 +93,8 @@ if ! binary_version="$("$binary" version 2>&1)"; then
     exit 1
 fi
 
-for integration in "$project_dir/shell/pinyintab.bash" "$project_dir/shell/pinyintab.zsh"; do
+for integration in "$project_dir/shell/pinyintab.bash" "$project_dir/shell/pinyintab.zsh" \
+    "$project_dir/shell/keybindings.bash" "$project_dir/shell/keybindings.zsh"; do
     if [[ ! -f "$integration" ]]; then
         echo "error: missing shell integration: $integration" >&2
         exit 1
@@ -104,9 +105,12 @@ install -d "$BIN_DIR" "$SHARE_DIR"
 install -m 755 "$binary" "$BIN_DIR/ptab"
 install -m 644 "$project_dir/shell/pinyintab.bash" "$SHARE_DIR/pinyintab.bash"
 install -m 644 "$project_dir/shell/pinyintab.zsh" "$SHARE_DIR/pinyintab.zsh"
+install -m 644 "$project_dir/shell/keybindings.bash" "$SHARE_DIR/keybindings.bash"
+install -m 644 "$project_dir/shell/keybindings.zsh" "$SHARE_DIR/keybindings.zsh"
+install -m 755 "$project_dir/uninstall.sh" "$SHARE_DIR/uninstall.sh"
 
 if [[ "$shell_name" == "zsh" ]]; then
-    rc_file="$HOME/.zshrc"
+    rc_file="${ZDOTDIR:-$HOME}/.zshrc"
     integration_file="$SHARE_DIR/pinyintab.zsh"
 else
     rc_file="$HOME/.bashrc"

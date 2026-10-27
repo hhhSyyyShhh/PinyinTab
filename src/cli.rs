@@ -1,6 +1,6 @@
 //! Command-line interface used by the `ptab` executable and shell wrappers.
 
-use crate::completion::{complete, EntryFilter};
+use crate::completion::{complete_with_language, CandidateLanguage, EntryFilter};
 use crate::diagnostics::{doctor_report, version_report};
 use crate::NameMapper;
 use std::ffi::{OsStr, OsString};
@@ -56,15 +56,16 @@ where
             ExitCode::SUCCESS
         }
         Some("complete") => {
-            let Some(directory) = args.next().map(PathBuf::from) else {
-                return usage_error("expected: ptab complete <directory> <typed-path> [filter]");
+            let (directory, language) = match completion_directory(&mut args) {
+                Ok(request) => request,
+                Err(message) => return usage_error(message),
             };
             let typed = args
                 .next()
                 .and_then(|value| value.into_string().ok())
                 .unwrap_or_default();
             let filter = entry_filter(args.next().as_deref());
-            match complete(&directory, &typed, filter) {
+            match complete_with_language(&directory, &typed, filter, language) {
                 Ok(candidates) => {
                     for candidate in candidates {
                         println!("{candidate}");
@@ -78,10 +79,9 @@ where
             }
         }
         Some("complete-command") => {
-            let Some(directory) = args.next().map(PathBuf::from) else {
-                return usage_error(
-                    "expected: ptab complete-command <directory> <word-index> <words...>",
-                );
+            let (directory, language) = match completion_directory(&mut args) {
+                Ok(request) => request,
+                Err(message) => return usage_error(message),
             };
             let Some(index) = args
                 .next()
@@ -97,7 +97,7 @@ where
             let Some(filter) = crate::context::path_context(&words, index) else {
                 return ExitCode::SUCCESS;
             };
-            match complete(&directory, &words[index], filter) {
+            match complete_with_language(&directory, &words[index], filter, language) {
                 Ok(candidates) => {
                     for candidate in candidates {
                         println!("{candidate}");
@@ -115,6 +115,24 @@ where
         ),
         Some(unknown) => usage_error(&format!("unknown command: {unknown:?}")),
     }
+}
+
+/// An optional leading mode preserves the old directory-first protocol. Shell
+/// integrations explicitly request auto mode; diagnostics keep all candidates.
+fn completion_directory(
+    args: &mut impl Iterator<Item = OsString>,
+) -> Result<(PathBuf, CandidateLanguage), &'static str> {
+    let first = args.next().ok_or("expected a completion directory")?;
+    if first != OsStr::new("--language") {
+        return Ok((PathBuf::from(first), CandidateLanguage::All));
+    }
+    let mode = args
+        .next()
+        .and_then(|value| value.into_string().ok())
+        .and_then(|value| CandidateLanguage::parse(&value))
+        .ok_or("--language must be all, auto, chinese or english")?;
+    let directory = args.next().ok_or("expected a directory after --language")?;
+    Ok((PathBuf::from(directory), mode))
 }
 
 /// Convert the optional completion flag to a command-aware filter.

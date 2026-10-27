@@ -9,6 +9,30 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.5.0] - 2026-10-27
+
+### Added
+
+- Added one-shot Chinese/non-Han selection: Control+X then c/e in Bash 5 and Zsh, before completion or immediately after an unchanged Tab result.
+- Retained the original query while switching groups, including numbered collisions and nested paths. Editing the line or moving the cursor prevents stale-query replacement.
+- Added `--language all|auto|chinese|english` before the directory in both diagnostic completion interfaces; language selection still obeys command and type filters.
+- Installed a standalone uninstaller under `~/.local/share/pinyintab/uninstall.sh`.
+
+### Fixed
+
+- Complete real names such as `c.py` and `cs1.py` no longer expand as abbreviated stems under normal Tab.
+- Non-empty interactive queries prefer non-Han names when available; otherwise Pinyin completion remains available. Empty words show both groups.
+- Chinese-only misses do not fall back to native English filename completion.
+- Restored previous Tab and selector bindings on `ptab off`; bare Control+C/E remain native.
+- Respected Zsh's `ZDOTDIR` during install and uninstall.
+
+### Documentation and tests
+
+- Made Chinese the default README, retained English at `README.en.md` and the old Chinese URL as a compatibility link.
+- Split beginner installation into download, check, install, reopen, verify and enable steps; clarified network failures, SHA-256 and offline installation.
+- Added exact-name, language-group, numeric-collision, CLI and real-terminal key regressions. Vim's normal-mode `p` paste was diagnosed separately and is not a PinyinTab code-generation feature.
+- Kept release platforms, default-off installation and Tab-before-Enter semantics unchanged.
+
 ## [0.4.2] - 2026-09-03
 
 ### Added

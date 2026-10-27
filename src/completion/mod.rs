@@ -2,6 +2,9 @@
 
 mod matcher;
 mod path;
+mod selection;
+
+pub use selection::CandidateLanguage;
 
 use crate::completion::matcher::{candidate_matches, mixed_candidate_matches};
 use crate::completion::path::{resolve_parent, split_typed_path};
@@ -34,6 +37,17 @@ pub fn complete(
     current_directory: &Path,
     typed: &str,
     filter: EntryFilter,
+) -> std::io::Result<Vec<String>> {
+    complete_with_language(current_directory, typed, filter, CandidateLanguage::All)
+}
+
+/// Apply language selection after command/type filtering, while never letting
+/// a Pinyin alias override a complete real name in the selected language.
+pub fn complete_with_language(
+    current_directory: &Path,
+    typed: &str,
+    filter: EntryFilter,
+    language: CandidateLanguage,
 ) -> std::io::Result<Vec<String>> {
     let (typed_parent, typed_name) = split_typed_path(typed);
     if matches!(filter, EntryFilter::JavaClasses) && !typed_parent.is_empty() {
@@ -83,6 +97,9 @@ pub fn complete(
         } else {
             &real_name
         };
+        if !language.accepts(completion_name) {
+            continue;
+        }
         let aliases = mapper.aliases(completion_name);
         if typed_name.is_empty() && completion_name.starts_with('.') {
             continue;
@@ -100,16 +117,33 @@ pub fn complete(
         if is_directory {
             completion.push('/');
         }
-        matches.push(completion);
+        // Exact real names are not abbreviations. In Chinese-only mode an
+        // English collision was excluded above, so an explicit request can
+        // still select 测试.py even when the real cs.py exists.
+        if completion_name == typed_name {
+            return Ok(vec![completion]);
+        }
+        matches.push((completion, selection::contains_han(completion_name)));
     }
 
-    matches.sort();
-    Ok(matches)
+    // An empty word starts a new argument (or a new directory component): show
+    // all names instead of hiding Chinese entries merely because English ones
+    // are also present. Explicit Chinese/English requests remain filtered.
+    if language == CandidateLanguage::Auto
+        && !typed_name.is_empty()
+        && matches.iter().any(|(_, chinese)| !chinese)
+    {
+        matches.retain(|(_, chinese)| !chinese);
+    }
+    let mut paths: Vec<String> = matches.into_iter().map(|(path, _)| path).collect();
+    paths.sort();
+    paths.dedup();
+    Ok(paths)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{complete, EntryFilter};
+    use super::{complete, complete_with_language, CandidateLanguage, EntryFilter};
     use crate::test_support::TestDirectory;
     use std::fs;
     use std::os::unix::fs::{symlink, PermissionsExt};
@@ -170,6 +204,115 @@ mod tests {
         let matches = complete(root.path(), "t", EntryFilter::Directories).expect("completion");
         assert!(matches.contains(&"test/".to_owned()));
         assert!(matches.contains(&"图片/".to_owned()));
+    }
+
+    #[test]
+    fn exact_real_file_is_not_expanded_as_a_stem_prefix() {
+        let root = TestDirectory::new("exact-real");
+        for name in ["c.py", "cs.py", "测试.py"] {
+            fs::write(root.path().join(name), []).unwrap();
+        }
+        for name in ["c.py", "cs.py", "测试.py"] {
+            assert_eq!(
+                complete(root.path(), name, EntryFilter::Any).unwrap(),
+                vec![name]
+            );
+        }
+        assert_eq!(
+            complete_with_language(
+                root.path(),
+                "cs.py",
+                EntryFilter::Any,
+                CandidateLanguage::Chinese
+            )
+            .unwrap(),
+            vec!["测试.py"]
+        );
+    }
+
+    #[test]
+    fn auto_prefers_english_but_empty_arguments_show_both() {
+        let root = TestDirectory::new("language-auto");
+        for name in ["cs.py", "测试.py"] {
+            fs::write(root.path().join(name), []).unwrap();
+        }
+        let query = |typed, language| {
+            complete_with_language(root.path(), typed, EntryFilter::Any, language).unwrap()
+        };
+        assert_eq!(query("cs", CandidateLanguage::Auto), vec!["cs.py"]);
+        assert_eq!(
+            query("cs", CandidateLanguage::All),
+            vec!["cs.py", "测试.py"]
+        );
+        assert_eq!(query("ceshi.py", CandidateLanguage::Auto), vec!["测试.py"]);
+        assert_eq!(query("", CandidateLanguage::Auto), vec!["cs.py", "测试.py"]);
+        assert_eq!(
+            query("ceshi", CandidateLanguage::English),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn numbered_collisions_and_nested_leaves_are_filtered_independently() {
+        let root = TestDirectory::new("language-numbered");
+        let parent = root.path().join("测试目录");
+        fs::create_dir(&parent).unwrap();
+        for name in [
+            "cs1.py",
+            "cs2.py",
+            "cs3.py",
+            "测试1.py",
+            "测试2.py",
+            "测试3.py",
+        ] {
+            fs::write(parent.join(name), []).unwrap();
+        }
+        let query = |typed, language| {
+            complete_with_language(root.path(), typed, EntryFilter::Any, language).unwrap()
+        };
+        assert_eq!(
+            query("csml/cs1.py", CandidateLanguage::Auto),
+            vec!["测试目录/cs1.py"]
+        );
+        assert_eq!(
+            query("csml/cs1.py", CandidateLanguage::Chinese),
+            vec!["测试目录/测试1.py"]
+        );
+        assert_eq!(
+            query("csml/cs", CandidateLanguage::Chinese),
+            vec![
+                "测试目录/测试1.py",
+                "测试目录/测试2.py",
+                "测试目录/测试3.py"
+            ]
+        );
+        assert_eq!(
+            query("csml/cs", CandidateLanguage::English),
+            vec!["测试目录/cs1.py", "测试目录/cs2.py", "测试目录/cs3.py"]
+        );
+    }
+
+    #[test]
+    fn missing_real_file_remains_a_query_and_directories_still_navigate() {
+        let root = TestDirectory::new("missing-exact");
+        fs::write(root.path().join("cs.py"), []).unwrap();
+        fs::write(root.path().join("测试.py"), []).unwrap();
+        assert_eq!(
+            complete(root.path(), "c.py", EntryFilter::Any).unwrap(),
+            vec!["cs.py", "测试.py"]
+        );
+        fs::create_dir(root.path().join("c.py")).unwrap();
+        assert_eq!(
+            complete(root.path(), "c.py", EntryFilter::Directories).unwrap(),
+            vec!["c.py/"]
+        );
+        assert!(complete(root.path(), "c.py/", EntryFilter::Any)
+            .unwrap()
+            .is_empty());
+        // A disallowed exact file must not bypass the command's type filter.
+        assert!(complete(root.path(), "cs.py", EntryFilter::Directories)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

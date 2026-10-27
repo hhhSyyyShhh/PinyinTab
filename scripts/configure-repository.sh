@@ -17,6 +17,7 @@ fi
 files=(
     "$project_dir/README.md"
     "$project_dir/README.zh-CN.md"
+    "$project_dir/README.en.md"
     "$project_dir/Cargo.toml"
     "$project_dir/docs/RELEASE_GUIDE.md"
     "$project_dir/scripts/install-online.sh"

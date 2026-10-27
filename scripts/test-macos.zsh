@@ -94,6 +94,7 @@ _pinyintab_zsh_complete
 # it before the user refines the query to `te` or `tu`.
 PREFIX=t
 words=(cd t)
+_pinyintab_language=all
 captured_compadd=()
 captured_message=()
 _pinyintab_zsh_complete
@@ -131,6 +132,7 @@ _pinyintab_zsh_complete
 
 PREFIX=te
 words=(cd te)
+_pinyintab_language=auto
 captured_compadd=()
 captured_message=()
 _pinyintab_zsh_complete

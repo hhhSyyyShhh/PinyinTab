@@ -21,6 +21,9 @@ remove_startup_block() {
 
 remove_startup_block "$HOME/.bashrc"
 remove_startup_block "$HOME/.zshrc"
+if [[ -n "${ZDOTDIR:-}" && "$ZDOTDIR" != "$HOME" ]]; then
+    remove_startup_block "$ZDOTDIR/.zshrc"
+fi
 rm -f "$INSTALL_ROOT/bin/ptab"
 rm -rf "$INSTALL_ROOT/share/pinyintab"
 

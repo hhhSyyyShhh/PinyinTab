@@ -33,6 +33,14 @@ Shell 命令（需要先加载 Bash/Zsh 集成脚本）：
   on/off 只影响当前终端。普通安装的新终端默认关闭补全。
   自动启动选项和 Oh My Zsh 插件入口属于用户明确选择的启用方式。
 
+中英文候选选择（Bash 5 / Zsh，需先 ptab on）：
+  Tab               有非中文候选时优先展示；没有时补全中文
+  Ctrl+X 后按 c     选择中文候选，可在 Tab 前或紧接 Tab 后使用
+  Ctrl+X 后按 e     选择非中文候选，也可从中文结果切回
+  Mac 使用 Control，不是 Command；先按 Control+X，松开后再按字母。
+  完整真实名称不再扩展为其他名称；空格后补全下一个参数。
+  多候选仍需继续输入，不随意猜选；切换只作用于本次补全。
+
 高级接口：
   ptab help advanced       查看拼音查询与 Shell 补全协议
   ptab help advanced zh    查看高级接口的中文说明
