@@ -94,6 +94,7 @@ fn complete(current_directory: &Path, typed: &str, filter: EntryFilter) -> std::
         if !candidate_matches(completion_name, typed_name)
             && !candidate_matches(&aliases.full, &typed_pinyin)
             && !candidate_matches(&aliases.initials, &typed_pinyin)
+            && !mixed_candidate_matches(&mapper, completion_name, typed_name)
         {
             continue;
         }
@@ -125,6 +126,38 @@ fn candidate_matches(candidate: &str, typed: &str) -> bool {
     };
 
     candidate_extension == typed_extension && candidate_stem.starts_with(typed_stem)
+}
+
+fn mixed_candidate_matches(mapper: &NameMapper, candidate: &str, typed: &str) -> bool {
+    let mut boundaries: Vec<usize> = candidate.char_indices().map(|(index, _)| index).collect();
+    boundaries.push(candidate.len());
+
+    for boundary in boundaries.into_iter().rev() {
+        if boundary == 0 {
+            continue;
+        }
+
+        let real_prefix = &candidate[..boundary];
+        if !typed.starts_with(real_prefix) {
+            continue;
+        }
+
+        let typed_remainder = &typed[boundary..];
+        if typed_remainder.is_empty() {
+            return true;
+        }
+
+        let candidate_remainder = &candidate[boundary..];
+        let aliases = mapper.aliases(candidate_remainder);
+        let typed_pinyin = typed_remainder.to_ascii_lowercase();
+        if candidate_matches(&aliases.full, &typed_pinyin)
+            || candidate_matches(&aliases.initials, &typed_pinyin)
+        {
+            return true;
+        }
+    }
+
+    false
 }
 
 fn split_typed_path(typed: &str) -> (&str, &str) {

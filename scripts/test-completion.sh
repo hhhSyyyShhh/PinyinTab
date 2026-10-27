@@ -10,6 +10,7 @@ mkdir -p "$PINFS_BASH_TEST_FIXTURE/测试目录/内部文件夹" "$PINFS_BASH_TE
 touch "$PINFS_BASH_TEST_FIXTURE/测试.py"
 touch "$PINFS_BASH_TEST_FIXTURE/测视.py"
 touch "$PINFS_BASH_TEST_FIXTURE/九九乘法表.py"
+touch "$PINFS_BASH_TEST_FIXTURE/九九测试程序.py"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.py"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.class"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表\$内部.class"
@@ -38,6 +39,24 @@ contains_line "$result" "测试.py"
 
 # The extension is compared separately from the abbreviated filename stem.
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" jiujiu.py --files)"
+contains_line "$result" "九九乘法表.py"
+
+# After Zsh inserts the common real prefix `九九`, pinyin can continue narrowing
+# the remaining Chinese part on the next Tab press.
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" jj --files)"
+contains_line "$result" "九九乘法表.py"
+contains_line "$result" "九九测试程序.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cf --files)"
+contains_line "$result" "九九乘法表.py"
+if grep -Fqx -- "九九测试程序.py" <<<"$result"; then
+    fail "mixed Chinese+pinyin input did not narrow candidates"
+fi
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cs --files)"
+contains_line "$result" "九九测试程序.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cf.py --files)"
 contains_line "$result" "九九乘法表.py"
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cfkjb.py --files)"
@@ -124,6 +143,11 @@ COMP_WORDS=(python3.12 cfkjb.py)
 COMP_CWORD=1
 _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "乘法口诀表.py"
+
+COMP_WORDS=(python3.12 九九cf)
+COMP_CWORD=1
+_pinfs_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "九九乘法表.py"
 
 COMP_WORDS=(java cfkjb)
 COMP_CWORD=1

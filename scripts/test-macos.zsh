@@ -9,6 +9,7 @@ trap 'rm -rf -- "$PINFS_MACOS_TEST_FIXTURE"' EXIT
 mkdir -p "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部文件夹" "$PINFS_MACOS_TEST_FIXTURE/你好"
 touch "$PINFS_MACOS_TEST_FIXTURE/测试.py" "$PINFS_MACOS_TEST_FIXTURE/测视.py" "$PINFS_MACOS_TEST_FIXTURE/项目 说明.md"
 touch "$PINFS_MACOS_TEST_FIXTURE/九九乘法表.py" "$PINFS_MACOS_TEST_FIXTURE/乘法口诀表.py"
+touch "$PINFS_MACOS_TEST_FIXTURE/九九测试程序.py"
 touch "$PINFS_MACOS_TEST_FIXTURE/乘法口诀表.class"
 touch "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部脚本.py"
 
@@ -36,6 +37,20 @@ contains_line "$result" "测试目录/内部文件夹/"
 
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" jiujiu.py --files)"
 contains_line "$result" "九九乘法表.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" jj --files)"
+contains_line "$result" "九九乘法表.py"
+contains_line "$result" "九九测试程序.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九cf --files)"
+contains_line "$result" "九九乘法表.py"
+[[ "$result" != *'九九测试程序.py'* ]] || {
+  print -u2 -- "FAIL: mixed Chinese+pinyin input did not narrow candidates"
+  exit 1
+}
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九cs --files)"
+contains_line "$result" "九九测试程序.py"
 
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" cfkjb.py --files)"
 contains_line "$result" "乘法口诀表.py"
