@@ -11,6 +11,8 @@ touch "$PINFS_BASH_TEST_FIXTURE/测试.py"
 touch "$PINFS_BASH_TEST_FIXTURE/测视.py"
 touch "$PINFS_BASH_TEST_FIXTURE/九九乘法表.py"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.py"
+touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.class"
+touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表\$内部.class"
 touch "$PINFS_BASH_TEST_FIXTURE/测试目录/内部脚本.py"
 touch "$PINFS_BASH_TEST_FIXTURE/项目 说明.md"
 touch "$PINFS_BASH_TEST_FIXTURE/录屏 2026-07-17.mov"
@@ -40,6 +42,12 @@ contains_line "$result" "九九乘法表.py"
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cfkjb.py --files)"
 contains_line "$result" "乘法口诀表.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cfkjb --java-classes)"
+contains_line "$result" "乘法口诀表"
+if grep -Fq '.class' <<<"$result"; then
+    fail "java class completion included the .class suffix"
+fi
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 测)"
 contains_line "$result" "测试.py"
@@ -116,6 +124,11 @@ COMP_WORDS=(python3.12 cfkjb.py)
 COMP_CWORD=1
 _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "乘法口诀表.py"
+
+COMP_WORDS=(java cfkjb)
+COMP_CWORD=1
+_pinfs_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "乘法口诀表"
 
 # The completer only uses the current word, so it also works after a pipe.
 COMP_WORDS=(cat README.md '|' python3 ce)

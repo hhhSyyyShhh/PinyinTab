@@ -8,6 +8,7 @@ enum EntryFilter {
     Any,
     Directories,
     Files,
+    JavaClasses,
 }
 
 fn main() {
@@ -41,6 +42,9 @@ fn main() {
                     EntryFilter::Directories
                 }
                 Some(value) if value == std::ffi::OsStr::new("--files") => EntryFilter::Files,
+                Some(value) if value == std::ffi::OsStr::new("--java-classes") => {
+                    EntryFilter::JavaClasses
+                }
                 _ => EntryFilter::Any,
             };
             complete(&directory, &typed, filter).unwrap_or_else(|error| fail(error));
@@ -51,6 +55,9 @@ fn main() {
 
 fn complete(current_directory: &Path, typed: &str, filter: EntryFilter) -> std::io::Result<()> {
     let (typed_parent, typed_name) = split_typed_path(typed);
+    if matches!(filter, EntryFilter::JavaClasses) && !typed_parent.is_empty() {
+        return Ok(());
+    }
     let (search_directory, completion_prefix) = resolve_parent(current_directory, typed_parent)?;
     let mapper = NameMapper;
     let mut matches = Vec::new();
@@ -61,26 +68,37 @@ fn complete(current_directory: &Path, typed: &str, filter: EntryFilter) -> std::
         if matches!(filter, EntryFilter::Directories) && !is_directory {
             continue;
         }
-        if matches!(filter, EntryFilter::Files) && is_directory {
+        if matches!(filter, EntryFilter::Files | EntryFilter::JavaClasses) && is_directory {
             continue;
         }
         let real_name = match entry.file_name().into_string() {
             Ok(name) => name,
             Err(_) => continue,
         };
-        let aliases = mapper.aliases(&real_name);
-        if typed_name.is_empty() && real_name.starts_with('.') {
+        let completion_name = if matches!(filter, EntryFilter::JavaClasses) {
+            let Some(class_name) = real_name.strip_suffix(".class") else {
+                continue;
+            };
+            if class_name.contains('$') {
+                continue;
+            }
+            class_name
+        } else {
+            &real_name
+        };
+        let aliases = mapper.aliases(completion_name);
+        if typed_name.is_empty() && completion_name.starts_with('.') {
             continue;
         }
         let typed_pinyin = typed_name.to_ascii_lowercase();
-        if !candidate_matches(&real_name, typed_name)
+        if !candidate_matches(completion_name, typed_name)
             && !candidate_matches(&aliases.full, &typed_pinyin)
             && !candidate_matches(&aliases.initials, &typed_pinyin)
         {
             continue;
         }
 
-        let mut completion = format!("{completion_prefix}{real_name}");
+        let mut completion = format!("{completion_prefix}{completion_name}");
         if is_directory {
             completion.push('/');
         }
@@ -224,7 +242,7 @@ fn fail(error: std::io::Error) -> ! {
 
 fn usage(program: &std::ffi::OsStr) -> ! {
     eprintln!(
-        "Usage:\n  {} doctor\n  {} alias <name>\n  {} complete <directory> <typed-path> [--directories|--files]",
+        "Usage:\n  {} doctor\n  {} alias <name>\n  {} complete <directory> <typed-path> [--directories|--files|--java-classes]",
         program.to_string_lossy(),
         program.to_string_lossy(),
         program.to_string_lossy()

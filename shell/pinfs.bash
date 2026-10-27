@@ -39,6 +39,9 @@ _pinfs_complete() {
         cd|rmdir)
             mode="--directories"
             ;;
+        java)
+            mode="--java-classes"
+            ;;
         cat|python|python[0-9]*|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
             mode="--files"
             ;;
