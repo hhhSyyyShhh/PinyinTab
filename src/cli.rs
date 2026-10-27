@@ -36,6 +36,19 @@ where
     }
 
     match command.as_deref() {
+        Some("update") => {
+            if args.next().is_some() {
+                return usage_error("expected: ptab update (no extra arguments)");
+            }
+            match crate::update::run() {
+                Ok(true) => ExitCode::SUCCESS,
+                Ok(false) => ExitCode::FAILURE,
+                Err(error) => {
+                    eprintln!("error: {error}");
+                    ExitCode::FAILURE
+                }
+            }
+        }
         Some("doctor") => {
             println!("{}", doctor_report());
             ExitCode::SUCCESS

@@ -43,3 +43,4 @@ Output and exit status:
 
 These commands do not enable completion or change the current shell.
 Use "ptab help" for everyday commands or "ptab help advanced zh" for Chinese.
+Complete existing names switched to the other group use whole-name alias equivalence.

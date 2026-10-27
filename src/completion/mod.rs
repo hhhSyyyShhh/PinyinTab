@@ -54,6 +54,20 @@ pub fn complete_with_language(
         return Ok(Vec::new());
     }
     let (search_directory, completion_prefix) = resolve_parent(current_directory, typed_parent)?;
+    // A complete existing word explicitly switched to the other script uses
+    // whole-name alias equivalence. Ordinary Tab retains exact-name priority.
+    // No history snapshot is needed for typed/pasted/history-recalled names.
+    let source_name = if matches!(filter, EntryFilter::JavaClasses) {
+        format!("{typed_name}.class")
+    } else {
+        typed_name.to_owned()
+    };
+    let reverse_exact = !typed_name.is_empty()
+        && search_directory.join(source_name).exists()
+        && matches!(
+            (language, selection::contains_han(typed_name)),
+            (CandidateLanguage::English, true) | (CandidateLanguage::Chinese, false)
+        );
     let mapper = NameMapper;
     let mut matches = Vec::new();
 
@@ -105,7 +119,11 @@ pub fn complete_with_language(
             continue;
         }
         let typed_pinyin = typed_name.to_ascii_lowercase();
-        if !candidate_matches(completion_name, typed_name)
+        if reverse_exact {
+            if !selection::equivalent_name(typed_name, completion_name) {
+                continue;
+            }
+        } else if !candidate_matches(completion_name, typed_name)
             && !candidate_matches(&aliases.full, &typed_pinyin)
             && !candidate_matches(&aliases.initials, &typed_pinyin)
             && !mixed_candidate_matches(&mapper, completion_name, typed_name)
@@ -249,6 +267,94 @@ mod tests {
         assert_eq!(
             query("ceshi", CandidateLanguage::English),
             Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn complete_real_names_can_switch_without_a_completion_snapshot() {
+        let root = TestDirectory::new("reverse-real");
+        for name in [
+            "测试.py",
+            "测试1.py",
+            "城市.py",
+            "cs.py",
+            "ceshi.py",
+            "cs1.py",
+            "cs.txt",
+        ] {
+            fs::write(root.path().join(name), []).unwrap();
+        }
+        let query = |typed, language| {
+            complete_with_language(root.path(), typed, EntryFilter::Any, language).unwrap()
+        };
+        assert_eq!(
+            query("测试.py", CandidateLanguage::English),
+            vec!["ceshi.py", "cs.py"]
+        );
+        assert_eq!(
+            query("cs.py", CandidateLanguage::Chinese),
+            vec!["城市.py", "测试.py"]
+        );
+        assert_eq!(
+            query("ceshi.py", CandidateLanguage::Chinese),
+            vec!["测试.py"]
+        );
+        assert_eq!(
+            query("测试1.py", CandidateLanguage::English),
+            vec!["cs1.py"]
+        );
+        assert_eq!(query("测试.py", CandidateLanguage::Auto), vec!["测试.py"]);
+        fs::remove_file(root.path().join("cs1.py")).unwrap();
+        assert!(query("测试1.py", CandidateLanguage::English).is_empty());
+    }
+
+    #[test]
+    fn reverse_selection_keeps_parent_and_command_type_filters() {
+        let root = TestDirectory::new("reverse-context");
+        let parent = root.path().join("项目 目录");
+        fs::create_dir(&parent).unwrap();
+        fs::write(parent.join("测试.py"), []).unwrap();
+        fs::write(parent.join("cs.py"), []).unwrap();
+        fs::create_dir(parent.join("ceshi.py")).unwrap();
+        let query = |filter| {
+            complete_with_language(
+                root.path(),
+                "项目 目录/测试.py",
+                filter,
+                CandidateLanguage::English,
+            )
+            .unwrap()
+        };
+        assert_eq!(query(EntryFilter::Files), vec!["项目 目录/cs.py"]);
+        assert_eq!(query(EntryFilter::Directories), vec!["项目 目录/ceshi.py/"]);
+        assert_eq!(query(EntryFilter::Executables), vec!["项目 目录/ceshi.py/"]);
+    }
+
+    #[test]
+    fn complete_java_names_switch_using_existing_class_files() {
+        let root = TestDirectory::new("reverse-java");
+        for name in ["测试.class", "cs.class", "cs1.class", "cs$Inner.class"] {
+            fs::write(root.path().join(name), []).unwrap();
+        }
+        assert_eq!(
+            complete_with_language(
+                root.path(),
+                "测试",
+                EntryFilter::JavaClasses,
+                CandidateLanguage::English
+            )
+            .unwrap(),
+            vec!["cs"]
+        );
+        assert_eq!(
+            complete_with_language(
+                root.path(),
+                "cs",
+                EntryFilter::JavaClasses,
+                CandidateLanguage::Chinese
+            )
+            .unwrap(),
+            vec!["测试"]
         );
     }
 

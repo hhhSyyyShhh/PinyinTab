@@ -36,6 +36,8 @@ jobs:
         run: cargo build --release --locked
       - name: Installer startup-policy tests
         run: ./scripts/test-install.sh
+      - name: Update transaction and download-failure tests
+        run: python3 scripts/test-update.py
       - name: Bash syntax
         run: bash -n install.sh uninstall.sh shell/pinyintab.bash scripts/*.sh
       - name: Zsh syntax

@@ -46,9 +46,22 @@ pub(super) fn contains_han(name: &str) -> bool {
     })
 }
 
+/// Compare complete names across scripts, not prefixes. In particular,
+/// 测试.py must not switch to cs1.py merely because `cs` is its initials.
+pub(super) fn equivalent_name(source: &str, candidate: &str) -> bool {
+    let mapper = crate::NameMapper;
+    let (chinese, latin) = match (contains_han(source), contains_han(candidate)) {
+        (true, false) => (source, candidate),
+        (false, true) => (candidate, source),
+        _ => return false,
+    };
+    let aliases = mapper.aliases(chinese);
+    aliases.full.eq_ignore_ascii_case(latin) || aliases.initials.eq_ignore_ascii_case(latin)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{contains_han, CandidateLanguage};
+    use super::{contains_han, equivalent_name, CandidateLanguage};
 
     #[test]
     fn distinguishes_han_from_other_non_ascii_names() {
@@ -67,5 +80,22 @@ mod tests {
         }
         assert_eq!(CandidateLanguage::parse("zh"), None);
         assert_eq!(CandidateLanguage::parse(""), None);
+    }
+
+    #[test]
+    fn complete_equivalence_preserves_numbers_extensions_and_mixed_names() {
+        for (chinese, latin) in [
+            ("测试.py", "cs.py"),
+            ("测试.py", "ceshi.py"),
+            ("测试1.py", "CS1.py"),
+            ("测试-v2.py", "cs-v2.py"),
+            ("项目 说明.txt", "xm sm.txt"),
+        ] {
+            assert!(equivalent_name(chinese, latin));
+            assert!(equivalent_name(latin, chinese));
+        }
+        for candidate in ["c.py", "cs1.py", "cs.txt", "cs.py.bak", "测视.py"] {
+            assert!(!equivalent_name("测试.py", candidate), "{candidate}");
+        }
     }
 }

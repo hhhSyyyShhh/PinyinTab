@@ -100,6 +100,9 @@ for integration in "$project_dir/shell/pinyintab.bash" "$project_dir/shell/pinyi
         exit 1
     fi
 done
+updater="$project_dir/scripts/install-online.sh"
+[[ -f "$updater" ]] || updater="$project_dir/update.sh"
+[[ -f "$updater" ]] || { echo 'error: missing update helper' >&2; exit 1; }
 
 install -d "$BIN_DIR" "$SHARE_DIR"
 install -m 755 "$binary" "$BIN_DIR/ptab"
@@ -108,6 +111,7 @@ install -m 644 "$project_dir/shell/pinyintab.zsh" "$SHARE_DIR/pinyintab.zsh"
 install -m 644 "$project_dir/shell/keybindings.bash" "$SHARE_DIR/keybindings.bash"
 install -m 644 "$project_dir/shell/keybindings.zsh" "$SHARE_DIR/keybindings.zsh"
 install -m 755 "$project_dir/uninstall.sh" "$SHARE_DIR/uninstall.sh"
+install -m 755 "$updater" "$SHARE_DIR/update.sh"
 
 if [[ "$shell_name" == "zsh" ]]; then
     rc_file="${ZDOTDIR:-$HOME}/.zshrc"

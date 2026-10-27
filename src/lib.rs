@@ -12,6 +12,7 @@ pub mod context;
 mod diagnostics;
 mod help;
 mod mapper;
+mod update;
 
 #[cfg(test)]
 mod test_support;

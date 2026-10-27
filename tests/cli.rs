@@ -217,3 +217,62 @@ fn unknown_commands_return_actionable_usage_errors() {
         }
     }
 }
+
+#[test]
+fn update_rejects_arguments_and_never_updates_a_source_checkout() {
+    let extra = run(&["update", "unexpected"]);
+    assert_eq!(extra.status.code(), Some(2));
+    assert!(extra.stdout.is_empty());
+    let source = run(&["update"]);
+    assert_eq!(source.status.code(), Some(1));
+    assert!(source.stdout.is_empty());
+    assert!(String::from_utf8(source.stderr)
+        .unwrap()
+        .contains("installed release"));
+}
+
+#[test]
+fn installed_update_dispatches_its_own_helper_and_preserves_failure_status() {
+    use std::fs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let root = std::env::temp_dir().join(format!(
+        "pinyintab-cli-update-{}-{unique}",
+        std::process::id()
+    ));
+    fs::create_dir(&root).unwrap();
+    struct Cleanup(std::path::PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    let _cleanup = Cleanup(root.clone());
+    fs::create_dir(root.join("bin")).unwrap();
+    fs::create_dir_all(root.join("share/pinyintab")).unwrap();
+    let binary = root.join("bin/ptab");
+    fs::copy(env!("CARGO_BIN_EXE_ptab"), &binary).unwrap();
+    let invoke = || {
+        Command::new(&binary)
+            .arg("update")
+            .env("PINYINTAB_INSTALL_ROOT", "/wrong-prefix")
+            .env("UPDATE_EXPECTED_ROOT", &root)
+            .output()
+            .unwrap()
+    };
+    let missing = invoke();
+    assert_eq!(missing.status.code(), Some(1));
+    assert!(String::from_utf8(missing.stderr)
+        .unwrap()
+        .contains("updater is missing"));
+    let helper = root.join("share/pinyintab/update.sh");
+    fs::write(&helper, "test \"$PINYINTAB_INSTALL_ROOT\" = \"$UPDATE_EXPECTED_ROOT\" || exit 9\ntest \"$1\" = --update || exit 9\nprintf 'UPDATE_DISPATCH_OK\\n'\n").unwrap();
+    let success = invoke();
+    assert!(success.status.success());
+    assert_eq!(success.stdout, b"UPDATE_DISPATCH_OK\n");
+    fs::write(&helper, "exit 7\n").unwrap();
+    assert_eq!(invoke().status.code(), Some(1));
+}
