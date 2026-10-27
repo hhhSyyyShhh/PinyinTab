@@ -40,6 +40,21 @@ _pinfs_zsh_complete() {
   # Returning success with no candidates prevents Zsh from falling back to its
   # generic file completer and re-introducing a directory for commands like cat.
   (( ${#candidates[@]} > 0 )) || return 0
+
+  # Once a previous completion has inserted a real Chinese prefix, a remaining
+  # pinyin suffix may still be ambiguous (for example 九九cf can mean 乘法 or
+  # 除法). Preserve the user's mixed input and show the real candidates instead
+  # of letting Zsh replace it with their shorter common Chinese prefix.
+  if (( ${#candidates[@]} > 1 )) \
+    && [[ "$current" == *[一-龥]* ]] \
+    && [[ "$current" == *[A-Za-z]* ]]; then
+    compadd -x 'PinFS 候选（输入仍保留，可继续修改后再按 Tab）：'
+    for candidate in "${candidates[@]}"; do
+      compadd -x "  $candidate"
+    done
+    return 0
+  fi
+
   # -U is required because the real Chinese candidate does not literally start
   # with the pinyin text currently present in PREFIX.
   for candidate in "${candidates[@]}"; do

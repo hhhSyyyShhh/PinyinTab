@@ -19,7 +19,7 @@ install -m 755 "$binary" "$HOME/.local/bin/pinfs"
 install -m 644 "$project_dir/shell/pinfs.bash" "$HOME/.local/share/pinfs/pinfs.bash"
 
 echo
-echo "PinFS Linux v0.2.3 installed."
+echo "PinFS Linux v0.2.4 installed."
 echo "Activate it in this terminal with:"
 echo "  source \"$HOME/.local/share/pinfs/pinfs.bash\""
 echo "  pinfs on"

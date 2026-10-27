@@ -11,6 +11,7 @@ touch "$PINFS_BASH_TEST_FIXTURE/测试.py"
 touch "$PINFS_BASH_TEST_FIXTURE/测视.py"
 touch "$PINFS_BASH_TEST_FIXTURE/九九乘法表.py"
 touch "$PINFS_BASH_TEST_FIXTURE/九九测试程序.py"
+touch "$PINFS_BASH_TEST_FIXTURE/九九除法表.py"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.py"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.class"
 touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表\$内部.class"
@@ -46,17 +47,22 @@ contains_line "$result" "九九乘法表.py"
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" jj --files)"
 contains_line "$result" "九九乘法表.py"
 contains_line "$result" "九九测试程序.py"
+contains_line "$result" "九九除法表.py"
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cf --files)"
 contains_line "$result" "九九乘法表.py"
-if grep -Fqx -- "九九测试程序.py" <<<"$result"; then
-    fail "mixed Chinese+pinyin input did not narrow candidates"
-fi
+contains_line "$result" "九九除法表.py"
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cs --files)"
 contains_line "$result" "九九测试程序.py"
 
-result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cf.py --files)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cheng --files)"
+contains_line "$result" "九九乘法表.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九chu --files)"
+contains_line "$result" "九九除法表.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 九九cheng.py --files)"
 contains_line "$result" "九九乘法表.py"
 
 result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cfkjb.py --files)"
@@ -145,6 +151,11 @@ _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "乘法口诀表.py"
 
 COMP_WORDS=(python3.12 九九cf)
+COMP_CWORD=1
+_pinfs_complete 2>/dev/null
+[[ -z "${COMPREPLY[*]-}" ]] || fail "ambiguous mixed input should be preserved"
+
+COMP_WORDS=(python3.12 九九cheng)
 COMP_CWORD=1
 _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "九九乘法表.py"

@@ -23,4 +23,4 @@ echo "[4/4] Environment information"
 "$project_dir/target/release/pinfs-demo" doctor
 echo "bash: $BASH_VERSION"
 
-echo "PASS: PinFS Linux v0.2.3 test suite"
+echo "PASS: PinFS Linux v0.2.4 test suite"

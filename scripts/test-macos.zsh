@@ -10,6 +10,7 @@ mkdir -p "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部文件夹" "$PINFS_MACOS_
 touch "$PINFS_MACOS_TEST_FIXTURE/测试.py" "$PINFS_MACOS_TEST_FIXTURE/测视.py" "$PINFS_MACOS_TEST_FIXTURE/项目 说明.md"
 touch "$PINFS_MACOS_TEST_FIXTURE/九九乘法表.py" "$PINFS_MACOS_TEST_FIXTURE/乘法口诀表.py"
 touch "$PINFS_MACOS_TEST_FIXTURE/九九测试程序.py"
+touch "$PINFS_MACOS_TEST_FIXTURE/九九除法表.py"
 touch "$PINFS_MACOS_TEST_FIXTURE/乘法口诀表.class"
 touch "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部脚本.py"
 
@@ -41,16 +42,20 @@ contains_line "$result" "九九乘法表.py"
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" jj --files)"
 contains_line "$result" "九九乘法表.py"
 contains_line "$result" "九九测试程序.py"
+contains_line "$result" "九九除法表.py"
 
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九cf --files)"
 contains_line "$result" "九九乘法表.py"
-[[ "$result" != *'九九测试程序.py'* ]] || {
-  print -u2 -- "FAIL: mixed Chinese+pinyin input did not narrow candidates"
-  exit 1
-}
+contains_line "$result" "九九除法表.py"
 
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九cs --files)"
 contains_line "$result" "九九测试程序.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九cheng --files)"
+contains_line "$result" "九九乘法表.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 九九chu --files)"
+contains_line "$result" "九九除法表.py"
 
 result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" cfkjb.py --files)"
 contains_line "$result" "乘法口诀表.py"
@@ -74,7 +79,7 @@ source "$project_dir/shell/pinfs.zsh"
 # Mock compadd to verify that an empty Rust result does not become an empty Zsh
 # candidate, which previously replaced the current word with a stray slash.
 typeset -ga captured_compadd
-compadd() { captured_compadd=("$@") }
+compadd() { captured_compadd+=("${(j: :)@}") }
 cd "$PINFS_MACOS_TEST_FIXTURE"
 PREFIX=nihao
 words=(cat nihao)
@@ -82,6 +87,20 @@ captured_compadd=()
 _pinfs_zsh_complete
 (( ${#captured_compadd[@]} == 0 )) || {
   print -u2 -- "FAIL: empty completion called compadd and may insert a slash"
+  exit 1
+}
+
+PREFIX=九九cf
+words=(python3.12 九九cf)
+captured_compadd=()
+_pinfs_zsh_complete
+captured_text="${(j:\n:)captured_compadd}"
+[[ "$captured_text" == *'九九乘法表.py'* && "$captured_text" == *'九九除法表.py'* ]] || {
+  print -u2 -- "FAIL: ambiguous mixed input did not display both real candidates"
+  exit 1
+}
+[[ "$captured_text" != *'-U'* ]] || {
+  print -u2 -- "FAIL: ambiguous mixed input used replacement completion"
   exit 1
 }
 unfunction compadd

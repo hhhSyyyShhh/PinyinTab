@@ -12,7 +12,7 @@ _pinfs_commands=(
 )
 
 _pinfs_complete() {
-    local current candidate mode command index token
+    local current candidate mode command index token reply_count
     current="${COMP_WORDS[COMP_CWORD]}"
     mode=""
     command="${COMP_WORDS[0]}"
@@ -50,6 +50,23 @@ _pinfs_complete() {
     while IFS= read -r candidate; do
         COMPREPLY[${#COMPREPLY[@]}]="$candidate"
     done < <("$_pinfs_binary" complete "$PWD" "$current" $mode 2>/dev/null)
+
+    reply_count=0
+    for candidate in "${COMPREPLY[@]-}"; do
+        [[ -n "$candidate" ]] && reply_count=$((reply_count + 1))
+    done
+
+    if [[ $reply_count -gt 1 \
+        && "$current" == *[一-龥]* \
+        && "$current" == *[A-Za-z]* ]]; then
+        printf '\nPinFS candidates (input preserved; refine it and press Tab again):\n' >&2
+        for candidate in "${COMPREPLY[@]}"; do
+            printf '  %s\n' "$candidate" >&2
+        done
+        COMPREPLY=()
+        return 0
+    fi
+
     compopt -o filenames 2>/dev/null || true
     for candidate in "${COMPREPLY[@]-}"; do
         if [[ "$candidate" == */ ]]; then
