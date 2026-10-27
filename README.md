@@ -119,6 +119,7 @@ bash install-online.sh --enable-on-startup
 ### 下载失败怎么办
 
 - `curl (7)` / `curl (28)`：连接失败或超时，先检查机器能否访问 GitHub。反复运行安装命令不能绕过网络限制，不要关闭 HTTPS 证书检查。
+- `HTTP 403` 且提示 `API rate limit exceeded`：当前网络出口的 GitHub 匿名 API 配额已用完。等待配额恢复，或使用下面的手动安装；不要在公开反馈中粘贴账号 Token。其他 403 也可能来自网络访问策略，需要看具体错误信息。
 - 下载脚本成功不代表安装包也能下载；后续还要访问 GitHub API、Release 附件及其重定向域名。
 - 能在另一台电脑下载时，从 [Release 页面](https://github.com/hhhSyyyShhh/PinyinTab/releases/latest) 下载**对应系统的 `.tar.gz` 和同名 `.sha256` 两个文件**，再复制到目标机器。
 
