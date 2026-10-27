@@ -21,7 +21,7 @@ PinyinTab lets you type Pinyin for a Chinese filename or directory and press <kb
 
 [![PinyinTab terminal demo](assets/demo.gif)](assets/demo.mp4)
 
-> This is an earlier basic-completion recording, not a v0.6.0 shortcut test.
+> This is an earlier basic-completion recording, not a v0.6.1 shortcut test.
 > See the [four current selection operations](#language-selection) below.
 
 ```text
@@ -73,7 +73,7 @@ The normal installer loads the `ptab` command but leaves completion disabled. Re
 ptab on
 ```
 
-In the new terminal, `ptab version` should report `PinyinTab 0.6.0`. If the
+In the new terminal, `ptab version` should report `PinyinTab 0.6.1`. If the
 command is unavailable after a successful install, source
 `~/.local/share/pinyintab/pinyintab.zsh` (Zsh) or `pinyintab.bash` (Bash), then
 run `ptab on`. The [Chinese quick start](README.md#安装) includes separate
@@ -103,7 +103,7 @@ cd PinyinTab
 
 ### Update
 
-Starting with v0.6.0, run `ptab update`, then reopen the terminal and run
+Starting with v0.6.1, run `ptab update`, then reopen the terminal and run
 `ptab version` and `ptab on`. Older versions must first be upgraded once using
 the installer. Updates verify SHA-256 and the staged binary, never downgrade,
 and attempt rollback if replacement checks fail. Startup configuration and
