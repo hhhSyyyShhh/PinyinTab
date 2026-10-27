@@ -4,7 +4,7 @@
 
 Native Pinyin-aware path completion for Bash and Zsh.
 
-中文路径拼音补全：输入拼音，按 Tab，得到真实路径。 | Type Pinyin, press Tab, get the real path.
+中文路径拼音补全：输入拼音，按 Tab，转换为中文路径。 | Type Pinyin, press Tab, complete the Chinese path.
 
 [简体中文](README.md) · [Install](#installation) · [Usage](#usage) · [Language selection](#language-selection) · [Compatibility](#compatibility)
 
@@ -230,22 +230,6 @@ cargo build --release --locked
 ```
 
 CI runs Rust and Shell tests on Ubuntu and macOS, checks formatting and Clippy, and enforces a 70% Rust line-coverage floor. Chinese-named examples for Python, Java, Julia, JavaScript, Ruby, Perl, C, Rust, Swift, and Bash are available in `demo-source`.
-
-## Version history
-
-The PinFS prototypes are available as source archives:
-
-[0.1.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.1.0) →
-[0.2.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.0) →
-[0.2.1](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.1) →
-[0.2.2](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.2) →
-[0.2.3](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.3) →
-[0.2.4](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.4) →
-[PinyinTab 0.3.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.3.0) →
-[current release](https://github.com/hhhSyyyShhh/PinyinTab/releases/latest).
-
-The early snapshots were imported from local archives on 2026-10-27 for
-reference. Use the current release for new installations.
 
 ## Contributing and security
 
