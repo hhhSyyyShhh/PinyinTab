@@ -62,7 +62,8 @@ Published tags and assets are not reused or overwritten.
 
 Historical source imports retain their original version and program name.
 Record the archive source, file hashes, import date and verification scope;
-do not present an import date as the original publication date. Archive-only
-releases must not replace the current latest release.
+do not present an import date as the original publication date. Keep historical
+imports on an archive branch and version tags rather than adding backfilled
+entries to the current release list.
 
 By contributing, you agree that your contribution is licensed under the project's MIT License.

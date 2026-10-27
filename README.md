@@ -4,7 +4,7 @@
 
 面向 Bash 与 Zsh 的原生中文路径拼音补全插件。
 
-中文路径拼音补全：输入拼音，按 Tab，得到真实路径。 | Type Pinyin, press Tab, get the real path.
+中文路径拼音补全：输入拼音，按 Tab，转换为中文路径。 | Type Pinyin, press Tab, complete the Chinese path.
 
 [English](README.en.md) · [安装](#安装) · [使用](#使用) · [中英文切换](#中英文候选切换) · [兼容范围](#兼容范围)
 
@@ -322,21 +322,6 @@ cargo build --release --locked
 ```
 
 CI 会在 Ubuntu 和 macOS 上运行 Rust 与 Shell 测试、检查格式和 Clippy，并要求 Rust 行覆盖率不低于 70%。`demo-source` 提供 Python、Java、Julia、JavaScript、Ruby、Perl、C、Rust、Swift 和 Bash 的中文文件名示例。
-
-## 版本历史
-
-PinFS 原型阶段的源码已补录归档：
-
-[0.1.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.1.0) →
-[0.2.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.0) →
-[0.2.1](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.1) →
-[0.2.2](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.2) →
-[0.2.3](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.3) →
-[0.2.4](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.4) →
-[PinyinTab 0.3.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.3.0) →
-[当前版本](https://github.com/hhhSyyyShhh/PinyinTab/releases/latest)。
-
-早期快照于 2026-10-27 从本地存档补录，仅供追溯。当前安装请使用最新版。
 
 ## 贡献与安全
 
