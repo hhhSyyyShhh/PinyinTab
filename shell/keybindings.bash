@@ -44,7 +44,7 @@ _pinyintab_bash_install_keys() {
     _pinyintab_saved_key_sequences=()
     _pinyintab_saved_key_types=()
     _pinyintab_saved_key_values=()
-    for map in emacs-standard vi-insertion; do
+    for map in emacs-standard vi-insert; do
         for key in '\C-i' '\C-xc' '\C-xe' '\C-xt' '\C-xu' '\C-xv' '\C-xw' '\C-xy'; do
             saved=''
             kind=''

@@ -9,7 +9,21 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.5.1] - 2026-10-27
+
+### Fixed
+
+- Used Readline's supported `vi-insert` keymap name instead of `vi-insertion`, removing Bash enable/disable warnings and registering the selectors in vi insertion mode.
+- Added an assertion that interactive startup contains no invalid-keymap diagnostic.
+
+### Testing
+
+- Run the full real-terminal regression suite separately in default and vi insertion editing modes on both Bash 5 and Zsh.
+- Retain v0.5.0's four language-selection operations, exact-name precedence, default-off installation and release platforms.
+
 ## [0.5.0] - 2026-10-27
+
+> Superseded by v0.5.1: the Bash vi keymap name in v0.5.0 could produce binding warnings and leave selectors unregistered in vi mode. Tags and archives are retained unchanged.
 
 ### Added
 

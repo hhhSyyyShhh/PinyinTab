@@ -17,11 +17,13 @@ from pathlib import Path
 
 
 class Terminal:
-    def __init__(self, shell, root, integration, binary):
+    def __init__(self, shell, root, integration, binary, vi_mode=False):
         self.master, slave = pty.openpty()
         env = dict(os.environ, HOME=str(root), ZDOTDIR=str(root), TERM="xterm",
                    PINYINTAB_BINARY=str(binary), LC_ALL="en_US.UTF-8")
         args = [shell, "-f", "-i"] if shell.endswith("zsh") else [shell, "--noprofile", "--norc", "-i"]
+        if vi_mode and not shell.endswith("zsh"):
+            args[-1:-1] = ["-o", "vi"]
         self.process = subprocess.Popen(args, stdin=slave, stdout=slave, stderr=slave,
                                         cwd=root, env=env, start_new_session=True)
         os.close(slave)
@@ -29,11 +31,15 @@ class Terminal:
         if shell.endswith("zsh"):
             setup = "PROMPT='ptab> '; RPROMPT=''; _probe() { print -r -- __BUFFER_BEGIN__; print -r -- \"$BUFFER\"; print -r -- __BUFFER_END__; BUFFER=''; zle redisplay; }; zle -N _probe; bindkey '^X^G' _probe; "
             setup += "_original_selector() { LBUFFER+='RESTORED_KEY'; }; zle -N _original_selector; bindkey '^Xc' _original_selector; "
+            if vi_mode:
+                setup += "bindkey -v; bindkey -M viins '^X^G' _probe; bindkey -M viins '^Xc' _original_selector; "
         else:
             setup = "PS1='ptab> '; _probe() { printf '\\n__BUFFER_BEGIN__\\n%s\\n__BUFFER_END__\\n' \"$READLINE_LINE\"; READLINE_LINE=''; READLINE_POINT=0; }; bind -x '\"\\C-x\\C-g\":_probe'; "
             setup += "bind '\"\\C-xc\":\"RESTORED_KEY\"'; "
         self.send(setup + "source " + shlex.quote(str(integration)) + "; ptab on; printf '\\n__READY_%s__\\n' OK\n")
-        self.until(b"__READY_OK__")
+        startup = self.until(b"__READY_OK__")
+        assert b"invalid keymap" not in startup, startup.decode(errors="replace")
+        assert b"command not found" not in startup, startup.decode(errors="replace")
 
     def send(self, value):
         os.write(self.master, value.encode())
@@ -88,7 +94,8 @@ def main():
         (root / "test").mkdir()
         (root / "图片").mkdir()
         suffix = "zsh" if shell.endswith("zsh") else "bash"
-        terminal = Terminal(shell, root, project / "shell" / f"pinyintab.{suffix}", binary)
+        vi_mode = "--vi" in sys.argv[2:]
+        terminal = Terminal(shell, root, project / "shell" / f"pinyintab.{suffix}", binary, vi_mode)
         cases = [
             ("./yunxing", "./运行程序"),
             (f"../{root.name}/yunxing", f"../{root.name}/运行程序"),
@@ -165,7 +172,7 @@ def main():
             terminal.until(b"PinyinTab completion: OFF")
             assert terminal.probe("./yunxing") == "./yunxing", "off did not restore command completion"
             assert terminal.probe("\x18c") == "RESTORED_KEY", "off did not restore the selector key"
-            print(f"PASS: {suffix}: {len(cases) + len(selection_cases) + len(numbered_cases) + 4} real-terminal checks (Tab, language selection, quoting, execution, off)")
+            print(f"PASS: {suffix}{' vi-insert' if vi_mode else ''}: {len(cases) + len(selection_cases) + len(numbered_cases) + 4} real-terminal checks (Tab, language selection, quoting, execution, off)")
         finally:
             terminal.close()
 
