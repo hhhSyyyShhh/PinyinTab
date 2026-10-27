@@ -84,6 +84,10 @@ bash install-online.sh --enable-on-startup
 
 If GitHub is unavailable from your network, download the matching archive and `.sha256` file from [Releases](https://github.com/hhhSyyyShhh/PinyinTab/releases), verify it, extract it, and run `./install.sh` with the same optional flag.
 
+An HTTP 403 response with `API rate limit exceeded` means the current network's
+anonymous GitHub API quota is exhausted. Wait for reset or use the documented
+manual installation; do not paste account tokens into public issue reports.
+
 ### From source
 
 Rust 1.66 or newer is required only for a source build:
