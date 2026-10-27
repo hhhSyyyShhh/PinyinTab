@@ -54,4 +54,15 @@ Do not silently rename real files, execute a candidate, or make completion depen
 
 Keep a pull request focused. Explain compatibility effects, update user-facing documentation, and add an entry under `Unreleased` in `CHANGELOG.md` for visible behavior changes.
 
+## Versioning and archives
+
+Maintenance releases increment the patch version: `0.6.2`, `0.6.3`, and so on.
+Minor versions are reserved for a larger feature or interface milestone.
+Published tags and assets are not reused or overwritten.
+
+Historical source imports retain their original version and program name.
+Record the archive source, file hashes, import date and verification scope;
+do not present an import date as the original publication date. Archive-only
+releases must not replace the current latest release.
+
 By contributing, you agree that your contribution is licensed under the project's MIT License.

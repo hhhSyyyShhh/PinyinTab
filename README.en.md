@@ -2,11 +2,9 @@
 
 # PinyinTab
 
-**Type the sound. Tab the path.**
-
 Native Pinyin-aware path completion for Bash and Zsh.
 
-中文路径拼音补全：输入拼音，按 Tab，得到真实中文路径。 | Type Pinyin, press Tab, get the real Chinese path.
+中文路径拼音补全：输入拼音，按 Tab，得到真实路径。 | Type Pinyin, press Tab, get the real path.
 
 [简体中文](README.md) · [Install](#installation) · [Usage](#usage) · [Language selection](#language-selection) · [Compatibility](#compatibility)
 
@@ -17,12 +15,11 @@ Native Pinyin-aware path completion for Bash and Zsh.
 
 </div>
 
-PinyinTab lets you type Pinyin for a Chinese filename or directory and press <kbd>Tab</kbd> to insert its real path. It does not rename files, mount a virtual filesystem, or modify interpreters.
+Type full Pinyin or initials for a Chinese filename or directory in Bash/Zsh, then press <kbd>Tab</kbd> to insert its real path. Filenames, file contents and the working directory stay unchanged.
 
 [![PinyinTab terminal demo](assets/demo.gif)](assets/demo.mp4)
 
-> This is an earlier basic-completion recording, not a v0.6.1 shortcut test.
-> See the [four current selection operations](#language-selection) below.
+> Basic completion, recorded with an earlier version. See [language selection](#language-selection) for current shortcuts.
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -124,7 +121,7 @@ Add `pinyintab` to the `plugins=(...)` list in `~/.zshrc`, then restart Zsh. Sel
 
 ### Uninstall
 
-Run this from a source checkout or extracted release:
+Run the installed uninstaller:
 
 ```bash
 bash "$HOME/.local/share/pinyintab/uninstall.sh"
@@ -214,7 +211,7 @@ Shell selects the current path argument and command context
           ↓
 Rust scans one directory level and matches real/full/initial aliases
           ↓
-Shell displays or inserts the real Chinese path
+Shell displays or inserts the real path
           ↓
 cd, Python, Java, Julia, or another command runs normally
 ```
@@ -233,6 +230,22 @@ cargo build --release --locked
 ```
 
 CI runs Rust and Shell tests on Ubuntu and macOS, checks formatting and Clippy, and enforces a 70% Rust line-coverage floor. Chinese-named examples for Python, Java, Julia, JavaScript, Ruby, Perl, C, Rust, Swift, and Bash are available in `demo-source`.
+
+## Version history
+
+The PinFS prototypes are available as source archives:
+
+[0.1.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.1.0) →
+[0.2.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.0) →
+[0.2.1](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.1) →
+[0.2.2](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.2) →
+[0.2.3](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.3) →
+[0.2.4](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.4) →
+[PinyinTab 0.3.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.3.0) →
+[current release](https://github.com/hhhSyyyShhh/PinyinTab/releases/latest).
+
+The early snapshots were imported from local archives on 2026-10-27 for
+reference. Use the current release for new installations.
 
 ## Contributing and security
 

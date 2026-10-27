@@ -2,11 +2,9 @@
 
 # PinyinTab
 
-**以音寻字，一键成径。**
-
 面向 Bash 与 Zsh 的原生中文路径拼音补全插件。
 
-中文路径拼音补全：输入拼音，按 Tab，得到真实中文路径。 | Type Pinyin, press Tab, get the real Chinese path.
+中文路径拼音补全：输入拼音，按 Tab，得到真实路径。 | Type Pinyin, press Tab, get the real path.
 
 [English](README.en.md) · [安装](#安装) · [使用](#使用) · [中英文切换](#中英文候选切换) · [兼容范围](#兼容范围)
 
@@ -17,11 +15,11 @@
 
 </div>
 
-PinyinTab 允许用户输入中文文件名或目录名的拼音，按下 <kbd>Tab</kbd> 后插入真实路径。它不会重命名文件、挂载虚拟文件系统，也不会修改解释器。
+在 Bash/Zsh 中输入中文文件名或目录名的全拼、首字母，按 <kbd>Tab</kbd> 插入真实路径。文件名、文件内容和当前工作目录保持不变。
 
 [![PinyinTab 终端演示](assets/demo.gif)](assets/demo.mp4)
 
-> 录屏为早期版本的基本路径补全演示。v0.6.1 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
+> 基础补全演示，录制于早期版本。当前候选切换操作见[使用说明](#中英文候选切换)。
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -46,11 +44,11 @@ python3 九九乘法表.py
 
 ### 预编译版本
 
-适合第一次使用：**不需要安装 Rust，不需要管理员权限，也不需要 FUSE。** 安装器会自动区分支持的 Linux/macOS 与处理器架构，`curl` 本身只负责下载。
+预编译包采用用户级安装，无需 Rust、管理员权限或 FUSE。安装脚本自动识别系统与处理器架构。
 
-支持 Ubuntu 22.04/24.04、CentOS Stream 9 的 x86_64 电脑/服务器，以及 Apple 芯片 Mac。Intel Mac、Windows 和 ARM Linux 暂无安装包。不是所有叫“CentOS”的旧系统都支持，完整范围见下表。
+支持 Ubuntu 22.04/24.04、CentOS Stream 9 x86_64，以及 Apple 芯片 Mac。其他平台见[兼容范围](#兼容范围)。
 
-**第 1 步：打开终端。** Mac 在“应用程序 → 实用工具 → 终端”打开；Linux 在自己的终端或已登录的 SSH 窗口操作。下面命令一次复制一个代码框，不要输入额外的 `$` 提示符。
+**第 1 步：打开终端。** Mac：“应用程序 → 实用工具 → 终端”；Linux：本地终端或 SSH。以下命令按代码框依次执行，不包含提示符 `$`。
 
 **第 2 步：下载安装脚本。**
 
@@ -60,9 +58,9 @@ curl --proto '=https' --tlsv1.2 -fL --connect-timeout 10 --max-time 60 \
   -o install-online.sh
 ```
 
-如果出现 `curl: (...)` 报错，先停在这里，**不要继续运行后面的安装命令**。进度长时间为 0 通常是下载网络不通，不是正在后台安装。解决办法见[下载失败怎么办](#下载失败怎么办)。
+下载失败时，先按[网络排查说明](#下载失败怎么办)处理，再重新执行此步。下载完成后继续安装。
 
-**第 3 步：检查脚本语法。** 没有输出通常表示通过；这只是语法检查，不等于安全审计。也可先用文本编辑器查看脚本内容。
+**第 3 步：检查脚本语法。** 没有输出表示语法检查通过；运行前可用文本编辑器查看脚本。语法检查不验证下载来源或脚本行为。
 
 ```bash
 bash -n install-online.sh
@@ -80,7 +78,7 @@ bash install-online.sh
 ptab version
 ```
 
-本次发布应显示 `PinyinTab 0.6.1`。已有 v0.6.1 或更新版本可用 `ptab update` 更新；更旧版本需要先按本页安装步骤升级一次。
+该命令显示已安装版本。v0.6.1 起支持 `ptab update`；更早版本需先按本页步骤升级一次。
 
 **第 6 步：手动开启补全。** 普通安装默认关闭，不会自动接管每个新终端。
 
@@ -92,7 +90,7 @@ ptab on
 ptab status
 ```
 
-看到 `ON` 后即可使用。下面 `<Tab>` 表示实际按一次 Tab，不是把这几个字符打出来。比如真实存在 `测试.py`，输入 `python3 ceshi.py`，按 Tab 补成中文后，再按回车运行。
+状态为 `ON` 后即可使用。`<Tab>` 表示按 Tab 键。例如目录中有 `测试.py`，输入 `python3 ceshi.py`，按 Tab 补全后再按回车。
 
 <details>
 <summary>出现 command not found，或希望每个新终端自动开启？</summary>
@@ -174,7 +172,7 @@ bash install.sh
 
 </details>
 
-手动安装完成后，同样重新打开终端，再运行 `ptab version` 和 `ptab on`。SHA-256 用于检查文件与发布的校验值一致，不是病毒扫描，也不能代替对下载来源的信任。
+手动安装后重新打开终端，运行 `ptab version` 和 `ptab on`。SHA-256 用于完整性校验，安装包及校验文件仍应来自可信来源。
 
 ### 更新已安装版本
 
@@ -221,7 +219,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
 
 ### 卸载
 
-v0.6.1 安装后可以直接运行已安装的卸载器，不需要找回压缩包：
+运行已安装的卸载器：
 
 ```bash
 bash "$HOME/.local/share/pinyintab/uninstall.sh"
@@ -249,8 +247,8 @@ Mac 使用 **Control（⌃）**，不是 Command（⌘）。`Control+X, c` 是�
 - 完整名称切换按全名对应，保留数字、扩展名和父目录。若同时存在 `cs1.py` 与 `ceshi1.py`，只展示两项并保留输入；没有对应文件则不改动。它们是不同的真实文件，不是同一文件的别名副本。
 - `cs` 同时对应 `cs1.py/cs2.py/cs3.py` 时，会列出英文组；选择中文后列出 `测试1.py/测试2.py/测试3.py`，继续输入数字来缩小范围。多个候选不会强行选一个。
 - “英文组”准确说是**名称不含汉字**的组；中英混合名属于中文组，判断对象是最后一级名称，不是整条父目录。
-- 选择只作用于本次补全。输入空格后再补全是新的参数；空查询会展示两类非隐藏条目。编辑内容或移动光标后，不会拿旧查询改写之前的参数。
-- 此功能只在 Shell 命令行生效，**不接管 Vim/Neovim 编辑区**。Vim 普通模式的 `p` 是粘贴；写代码前先按 `i` 进入插入模式。
+- 选择只作用于当前补全。空格后开始新参数，空查询展示两类非隐藏条目；编辑输入或移动光标后按当前词项重新查询。
+- 仅处理 Shell 路径参数，不接管 Vim/Neovim 编辑区。
 
 ## 使用
 
@@ -305,7 +303,7 @@ Shell 识别当前路径参数和命令场景
           ↓
 Rust 扫描当前一层目录并匹配真实名、全拼和首字母
           ↓
-Shell 展示或插入真实中文路径
+Shell 展示或插入真实路径
           ↓
 cd、Python、Java、Julia 等命令正常执行
 ```
@@ -324,6 +322,21 @@ cargo build --release --locked
 ```
 
 CI 会在 Ubuntu 和 macOS 上运行 Rust 与 Shell 测试、检查格式和 Clippy，并要求 Rust 行覆盖率不低于 70%。`demo-source` 提供 Python、Java、Julia、JavaScript、Ruby、Perl、C、Rust、Swift 和 Bash 的中文文件名示例。
+
+## 版本历史
+
+PinFS 原型阶段的源码已补录归档：
+
+[0.1.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.1.0) →
+[0.2.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.0) →
+[0.2.1](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.1) →
+[0.2.2](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.2) →
+[0.2.3](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.3) →
+[0.2.4](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.2.4) →
+[PinyinTab 0.3.0](https://github.com/hhhSyyyShhh/PinyinTab/releases/tag/v0.3.0) →
+[当前版本](https://github.com/hhhSyyyShhh/PinyinTab/releases/latest)。
+
+早期快照于 2026-10-27 从本地存档补录，仅供追溯。当前安装请使用最新版。
 
 ## 贡献与安全
 
