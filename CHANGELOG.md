@@ -4,6 +4,11 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 ## [Unreleased]
 
+### Documentation
+
+- Shortened the bilingual project description and public documentation; installation, verification and compatibility instructions are retained.
+- Linked historical PinFS source imports (0.1.0 and 0.2.0–0.2.4), added on 2026-10-27 with provenance and file hashes. The current release remains 0.6.1.
+
 ### Planned
 
 - Configurable polyphonic phrase dictionary.

@@ -10,7 +10,7 @@
 
 Linux Release 使用 `x86_64-unknown-linux-gnu`，要求 glibc 2.34 或更新版本。它通常也能运行在满足版本要求的 Debian、Fedora、RHEL、Rocky Linux、AlmaLinux 等 x86_64 发行版上，但未经 CI 验证的平台只标记为“预期可用”。Alpine 默认使用 musl；旧发行版可能缺少所需 glibc；ARM 服务器无法运行 x86_64 二进制。
 
-CentOS Linux 7/8 与 CentOS Stream 8 已停止维护，并且不满足当前 Release 的运行时基线，因此不属于支持平台。“支持 CentOS”在本项目中明确指 CentOS Stream 9 x86_64，而不是所有历史 CentOS 版本。
+CentOS Linux 7/8 与 CentOS Stream 8 不满足当前运行时基线。CentOS 支持范围为 Stream 9 x86_64。
 
 ## 安装后的启用策略
 
@@ -64,7 +64,7 @@ bash install-online.sh --enable-on-startup
 - `ptab off` 恢复启用前的补全定义。
 - 新终端默认保持补全关闭，除非安装时明确选择自动启用。
 
-## 不是“所有命令都无条件支持”
+## 命令上下文与限制
 
 ### v0.4.1 命令上下文回归范围
 
@@ -92,7 +92,7 @@ source "$HOME/.local/share/pinyintab/pinyintab.bash" # Zsh 使用 .zsh
 ptab on
 ```
 
-这只为普通本地路径参数显式注册补全，不理解工具的子命令或专用语言。复杂工具应增加 `src/context.rs` 适配和回归测试；启用期间会接管所列命令，关闭时恢复，不宣称与所有第三方补全器完全叠加。
+该配置为普通本地路径参数注册补全，不解析工具的子命令或专用语言。复杂工具需要在 `src/context.rs` 中适配并添加回归测试。启用期间接管所列命令，关闭时恢复；与第三方补全器的组合需分别验证。
 
 Tab 补全由 Shell、命令自己的补全器以及 PinyinTab 共同决定。下列情况需要单独设计，不能用一个通用文件扫描规则保证正确：
 
