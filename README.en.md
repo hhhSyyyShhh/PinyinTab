@@ -19,6 +19,9 @@ PinyinTab lets you type Pinyin for a Chinese filename or directory and press <kb
 
 [![PinyinTab terminal demo](assets/demo.gif)](assets/demo.mp4)
 
+> This is an earlier basic-completion recording, not a v0.5.0 shortcut test.
+> See the [four current selection operations](#language-selection) below.
+
 ```text
 python3 jiujiuchengfabiao.py<Tab>
         ↓

@@ -19,6 +19,8 @@ PinyinTab 允许用户输入中文文件名或目录名的拼音，按下 <kbd>T
 
 [![PinyinTab 终端演示](assets/demo.gif)](assets/demo.mp4)
 
+> 录屏为早期版本的基本路径补全演示。v0.5.0 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
+
 ```text
 python3 jiujiuchengfabiao.py<Tab>
         ↓
