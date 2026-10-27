@@ -6,28 +6,48 @@ _pinfs_saved_default=""
 _pinfs_saved_specs=()
 _pinfs_commands=(
     cd python python3 cat vim vi nano less head tail
-    cp mv rm touch mkdir rmdir java javac julia cargo rustc
+    cp mv rm touch mkdir rmdir java javac julia node ruby perl bash sh
+    cargo rustc gcc clang swift swiftc
 )
 
 _pinfs_complete() {
-    local current candidate mode
+    local current candidate mode command index token
     current="${COMP_WORDS[COMP_CWORD]}"
     mode=""
+    command="${COMP_WORDS[0]}"
     COMPREPLY=()
 
     if [[ ! -x "$_pinfs_binary" ]]; then
         return 0
     fi
 
-    if [[ "${COMP_WORDS[0]}" == "cd" ]]; then
-        mode="--directories"
+    for ((index = COMP_CWORD - 1; index >= 0; index--)); do
+        token="${COMP_WORDS[index]}"
+        case "$token" in
+            '|'|'||'|'&&'|';')
+                command="${COMP_WORDS[index + 1]}"
+                break
+                ;;
+        esac
+    done
+    if [[ "$command" == "sudo" && $((index + 2)) -le $COMP_CWORD ]]; then
+        command="${COMP_WORDS[index + 2]}"
     fi
+
+    case "$command" in
+        cd|rmdir)
+            mode="--directories"
+            ;;
+        cat|python|python3|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
+            mode="--files"
+            ;;
+    esac
 
     while IFS= read -r candidate; do
         COMPREPLY[${#COMPREPLY[@]}]="$candidate"
     done < <("$_pinfs_binary" complete "$PWD" "$current" $mode 2>/dev/null)
     compopt -o filenames 2>/dev/null || true
-    for candidate in "${COMPREPLY[@]}"; do
+    for candidate in "${COMPREPLY[@]-}"; do
         if [[ "$candidate" == */ ]]; then
             compopt -o nospace 2>/dev/null || true
             break
@@ -54,9 +74,9 @@ pinfs() {
 
             if help complete 2>/dev/null | grep -q -- '-D'; then
                 _pinfs_saved_default="$(complete -p -D 2>/dev/null || true)"
-                complete -o default -o bashdefault -F _pinfs_complete -D
+                complete -F _pinfs_complete -D
             fi
-            complete -o default -o bashdefault -F _pinfs_complete "${_pinfs_commands[@]}"
+            complete -F _pinfs_complete "${_pinfs_commands[@]}"
             _pinfs_active=1
             echo "PinFS pinyin completion: ON"
             ;;

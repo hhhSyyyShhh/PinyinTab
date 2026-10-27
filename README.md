@@ -1,4 +1,4 @@
-# PinFS v0.1.0
+# PinFS v0.2.0
 
 PinyinTab 更名前的 Shell 路径补全原型。本快照于 2026-10-27 从本地存档补录，保留原程序名和 `Cargo.toml` 中的版本号；这不是当年的在线发布记录。
 
@@ -6,10 +6,10 @@ PinyinTab 更名前的 Shell 路径补全原型。本快照于 2026-10-27 从本
 
 ## 内容与来源
 
-- 来源存档：`pinfs-demo-clean.tar.gz`。
+- 来源存档：`pinfs-demo-2.0`。
 - 保留 Rust 源码、Cargo 配置、Shell 脚本和源码示例；未包含生成文件、编译程序及研发笔记。
 - 原始文件哈希见 `SOURCE_MANIFEST.sha256`。本说明、清单和 MIT 许可证为补录时添加。
-- 源压缩包 SHA-256：`236780fadb7ce0e81e307bbabfd04e3b497ddb6f98be6cd9ed5a9e81b0d8b06d`。
+- 所选原始源码文件清单 SHA-256：`5eaf52680d2455a679a1cc259542fc5258506b09201c5d5a1e4e1b489b0b9e96`。
 
 ## 核对范围
 

@@ -6,10 +6,12 @@ binary="${PINFS_BINARY:-$project_dir/target/release/pinfs-demo}"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
 
-mkdir -p "$fixture/测试目录/内部文件夹"
+mkdir -p "$fixture/测试目录/内部文件夹" "$fixture/你好"
 touch "$fixture/测试.py"
 touch "$fixture/测视.py"
+touch "$fixture/测试目录/内部脚本.py"
 touch "$fixture/项目 说明.md"
+touch "$fixture/录屏 2026-07-17.mov"
 touch "$fixture/README.md"
 touch "$fixture/.隐藏文件"
 
@@ -41,12 +43,35 @@ contains_line "$result" "项目 说明.md"
 
 result="$($binary complete "$fixture" 测试目录/nei)"
 contains_line "$result" "测试目录/内部文件夹/"
+contains_line "$result" "测试目录/内部脚本.py"
+
+# V2 resolves a pinyin parent directory before completing its child.
+result="$($binary complete "$fixture" ceshimulu/nei)"
+contains_line "$result" "测试目录/内部文件夹/"
+contains_line "$result" "测试目录/内部脚本.py"
+
+# A trailing slash means: list entries inside the resolved directory.
+result="$($binary complete "$fixture" ceshimulu/)"
+contains_line "$result" "测试目录/内部文件夹/"
+contains_line "$result" "测试目录/内部脚本.py"
+
+result="$($binary complete "$fixture" 测试目录/)"
+contains_line "$result" "测试目录/内部文件夹/"
+
+result="$($binary complete "$fixture" luping --files)"
+contains_line "$result" "录屏 2026-07-17.mov"
 
 result="$($binary complete "$fixture" ce --directories)"
 contains_line "$result" "测试目录/"
 if grep -Fqx -- "测试.py" <<<"$result"; then
     fail "directory-only completion returned a file"
 fi
+
+result="$($binary complete "$fixture" nihao --files)"
+[[ -z "$result" ]] || fail "file-only completion returned a directory"
+
+result="$($binary complete "$fixture" nihao --directories)"
+contains_line "$result" "你好/"
 
 result="$($binary complete "$fixture" '')"
 if grep -Fqx -- ".隐藏文件" <<<"$result"; then
@@ -61,6 +86,22 @@ COMP_WORDS=(python3 ce)
 COMP_CWORD=1
 _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "测试.py"
+
+# cat accepts files, so it must not turn a directory into `你好/`.
+COMP_WORDS=(cat nihao)
+COMP_CWORD=1
+_pinfs_complete
+[[ -z "${COMPREPLY[*]-}" ]] || fail "cat completion returned a directory"
+
+COMP_WORDS=(cd nihao)
+COMP_CWORD=1
+_pinfs_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "你好/"
+
+COMP_WORDS=(python3 ceshimulu/neibu)
+COMP_CWORD=1
+_pinfs_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "测试目录/内部脚本.py"
 
 # The completer only uses the current word, so it also works after a pipe.
 COMP_WORDS=(cat README.md '|' python3 ce)
