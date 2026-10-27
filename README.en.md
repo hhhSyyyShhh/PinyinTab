@@ -6,6 +6,8 @@
 
 Native Pinyin-aware path completion for Bash and Zsh.
 
+中文路径拼音补全：输入拼音，按 Tab，得到真实中文路径。 | Type Pinyin, press Tab, get the real Chinese path.
+
 [简体中文](README.md) · [Install](#installation) · [Usage](#usage) · [Language selection](#language-selection) · [Compatibility](#compatibility)
 
 [![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
@@ -19,7 +21,7 @@ PinyinTab lets you type Pinyin for a Chinese filename or directory and press <kb
 
 [![PinyinTab terminal demo](assets/demo.gif)](assets/demo.mp4)
 
-> This is an earlier basic-completion recording, not a v0.5.1 shortcut test.
+> This is an earlier basic-completion recording, not a v0.6.0 shortcut test.
 > See the [four current selection operations](#language-selection) below.
 
 ```text
@@ -34,6 +36,7 @@ python3 九九乘法表.py
 - Multi-level completion through Pinyin parent directories.
 - Complete real names take precedence over prefix/Pinyin expansion.
 - Tab prefers non-Han names; Control+X then c/e explicitly selects either group.
+- Complete Chinese names can select existing full-Pinyin/initial counterparts without a previous Tab query.
 - Multiple candidates within a group still require refinement, never guessing.
 - Command-aware directory, file, and Java class completion.
 - Reversible `ptab on` / `ptab off` integration that restores previous completers.
@@ -70,7 +73,7 @@ The normal installer loads the `ptab` command but leaves completion disabled. Re
 ptab on
 ```
 
-In the new terminal, `ptab version` should report `PinyinTab 0.5.1`. If the
+In the new terminal, `ptab version` should report `PinyinTab 0.6.0`. If the
 command is unavailable after a successful install, source
 `~/.local/share/pinyintab/pinyintab.zsh` (Zsh) or `pinyintab.bash` (Bash), then
 run `ptab on`. The [Chinese quick start](README.md#安装) includes separate
@@ -97,6 +100,16 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git
 cd PinyinTab
 ./scripts/install-from-source.sh
 ```
+
+### Update
+
+Starting with v0.6.0, run `ptab update`, then reopen the terminal and run
+`ptab version` and `ptab on`. Older versions must first be upgraded once using
+the installer. Updates verify SHA-256 and the staged binary, never downgrade,
+and attempt rollback if replacement checks fail. Startup configuration and
+personal files are preserved. Temporary downloads and successful transaction
+backups are removed, not manually downloaded archives. Recovery failures retain
+backups and report their location. GitHub access is still required.
 
 ### Oh My Zsh
 
@@ -141,6 +154,12 @@ on the final component, not its parent directory. Exact real names stay intact
 under ordinary Tab; explicit Chinese selection can bypass an English collision.
 This affects the shell only, not Vim/Neovim insert-mode completion.
 
+At the end of `vim 测试1.py`, Control+X then e also finds an existing `cs1.py`
+without a Tab snapshot. Complete-name switching preserves numbers, extensions
+and parent paths: it will not select `cs2.py`. Multiple counterparts such as
+`cs1.py` and `ceshi1.py` are listed without replacing the query; no match leaves
+it unchanged. These are distinct existing files, not renamed files or copies.
+
 ## Usage
 
 ```bash
@@ -149,6 +168,7 @@ ptab off      # restore the previous completers
 ptab status   # show shell integration state
 ptab doctor   # show version, platform, architecture, shell, and state
 ptab version
+ptab update   # update an installed release, then reopen the terminal
 ptab --help   # commands, options, examples, and scope notes
 ptab help zh  # Chinese help
 ```

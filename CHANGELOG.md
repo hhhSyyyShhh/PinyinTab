@@ -9,6 +9,23 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.6.0] - 2026-10-27
+
+### Added
+
+- Switch a complete existing Chinese name to whole-name Pinyin/initial counterparts with Control+X then e, or back with c, without a previous Tab snapshot. Numbers, extensions and command filters remain significant.
+- Added `ptab update` for installed releases, with platform selection, SHA-256 and binary validation, no automatic downgrade, staged replacement, rollback and bounded cleanup. Startup settings and personal files are preserved.
+
+### Fixed
+
+- Explicit language requests with multiple matches display candidates without replacing the query with an unrelated common prefix.
+- Validate archive paths and reject links/special entries before extracting online downloads.
+
+### Testing
+
+- Added complete-name, CLI-dispatch, real-terminal and offline update-transaction regression tests, including failed-download, checksum, rollback and cleanup cases.
+- Existing release targets, default-off policy and native Control+C/E bindings are unchanged.
+
 ## [0.5.1] - 2026-10-27
 
 ### Fixed

@@ -31,6 +31,7 @@ status_in_clean_bash() {
 [[ -f "$HOME/.local/share/pinyintab/pinyintab.bash" ]] || fail "Bash integration was not installed"
 [[ -f "$HOME/.local/share/pinyintab/keybindings.bash" ]] || fail "Bash keybindings were not installed"
 [[ -x "$HOME/.local/share/pinyintab/uninstall.sh" ]] || fail "installed uninstaller is missing"
+[[ -x "$HOME/.local/share/pinyintab/update.sh" ]] || fail "installed updater is missing"
 grep -Fq '# >>> PinyinTab >>>' "$HOME/.bashrc" || fail "managed startup block is missing"
 if grep -Fq 'ptab on >/dev/null' "$HOME/.bashrc"; then
     fail "default installation enabled completion automatically"

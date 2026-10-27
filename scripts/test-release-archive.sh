@@ -27,6 +27,10 @@ printf '%s\n' '#!/bin/sh' 'printf "PTAB_RELEASE_EXEC_OK\n"' >"$PINYINTAB_RELEASE
 chmod +x "$PINYINTAB_RELEASE_FIXTURE/运行程序"
 
 "$package_dir/install.sh" --shell bash >/dev/null
+[[ -x "$HOME/.local/share/pinyintab/update.sh" && -f "$package_dir/apply-update.sh" ]] || {
+    echo 'FAIL: release is missing update helpers' >&2
+    exit 1
+}
 
 status="$(bash --noprofile --norc -c 'source "$HOME/.bashrc"; ptab status')"
 [[ "$status" == 'PinyinTab completion: OFF (Bash)' ]] || {

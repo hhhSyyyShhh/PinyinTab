@@ -56,7 +56,7 @@ class Terminal:
 
     def probe(self, typed):
         self.send(typed + "\t\x18\x07")
-        self.until(b"__BUFFER_BEGIN__\r\n")
+        self.last_output = self.until(b"__BUFFER_BEGIN__\r\n")
         return self.until(b"\r\n__BUFFER_END__").decode().strip()
 
     def close(self):
@@ -162,17 +162,29 @@ def main():
                 ("vim cs1.py\x18c", ["vim", "测试1.py"]),
                 ("vim cs1.py\t\x18c\x18e", ["vim", "cs1.py"]),
                 ("vim cs", ["vim", "cs"]),
+                ("vim 测试.py\x18e", ["vim", "cs.py"]),
+                ("vim 测试.py\x18e\x18c", ["vim", "测试.py"]),
+                ("vim 测试1.py\x18e", ["vim", "cs1.py"]),
+                ("vim cs1.py\x18c", ["vim", "测试1.py"]),
+                ("vim cs1.py\t", ["vim", "cs1.py"]),
+                ("vim 测试1.py \x18e", ["vim", "测试1.py"]),
+                ("grep 测试.py\x18e", ["grep", "测试.py"]),
             ]
             for typed, expected in numbered_cases:
                 actual = terminal.probe(typed)
                 assert shlex.split(actual) == expected, f"{suffix} numbered: {typed!r}: {actual!r}, expected {expected!r}"
+            (root / "ceshi.py").touch()
+            assert shlex.split(terminal.probe("vim 测试.py\x18e")) == ["vim", "测试.py"], "ambiguous reverse selection erased the query"
+            assert b"ceshi.py" in terminal.last_output and b"cs.py" in terminal.last_output, "reverse candidate list was not displayed"
+            (root / "cs1.py").unlink()
+            assert shlex.split(terminal.probe("vim 测试1.py\x18e")) == ["vim", "测试1.py"], "missing counterpart changed the query"
             terminal.send("./yunxing\t\n")
             terminal.until(b"PTAB_EXEC_OK\r\n")
             terminal.send("ptab off\n")
             terminal.until(b"PinyinTab completion: OFF")
             assert terminal.probe("./yunxing") == "./yunxing", "off did not restore command completion"
             assert terminal.probe("\x18c") == "RESTORED_KEY", "off did not restore the selector key"
-            print(f"PASS: {suffix}{' vi-insert' if vi_mode else ''}: {len(cases) + len(selection_cases) + len(numbered_cases) + 4} real-terminal checks (Tab, language selection, quoting, execution, off)")
+            print(f"PASS: {suffix}{' vi-insert' if vi_mode else ''}: {len(cases) + len(selection_cases) + len(numbered_cases) + 6} real-terminal checks (Tab, language selection, quoting, execution, off)")
         finally:
             terminal.close()
 

@@ -36,6 +36,7 @@ Shell 插入真实中文路径
 | Bash 集成 | `shell/pinyintab.bash` | 通过 `complete-command` 传递上下文，维护并恢复参数补全和 `complete -I` 首命令补全 |
 | Zsh 集成 | `shell/pinyintab.zsh` | 调用 Rust 核心并通过 `compadd` 写入文件与目录候选 |
 | 管理入口 | Shell 函数 `ptab` | 提供 `on`、`off`、`status`、`doctor` 和 `version` |
+| 自更新 | `src/update.rs`、`scripts/install-online.sh`、`scripts/apply-update.sh` | 定位自身安装前缀，下载校验、暂存替换与失败回滚；不编辑启动配置 |
 | 安装与发布 | `install.sh`、`scripts/`、`.github/workflows/` | 用户级安装、卸载、构建归档、CI 与 GitHub Release |
 
 安装器默认只在 Shell 启动文件中加载管理函数，不自动开启补全。`ptab on` 是当前 Shell 的显式状态切换；只有 `--enable-on-startup` 会把自动启用命令写入托管配置块。
@@ -80,6 +81,16 @@ ceshimulu/neibuwenjian
 
 `shell/keybindings.*` 保存补全前后的命令缓冲区和光标位置。Control+X 后按 c/e 可以在结果未被编辑时恢复原查询并重新请求另一组；否则只查询当前参数。Bash 使用 Readline 原生 complete 动作，Zsh 使用 ZLE completion widget，不自行解析或执行命令。按键绑定在 `ptab off` 时恢复。Tab 不是按键前缀，因此不会引入等候字母的延迟，也不占用裸 Control+C/E。
 
+### v0.6.0 完整名称反向选择
+
+显式请求另一语言组、且当前名称在已解析父目录中真实存在时，核心使用全名等价比较，而不是前缀扩展。中文名的全拼或首字母必须与非中文真实名称完整对应；比较保留数字、扩展名和非汉字部分。例如“测试1.py”对应 `cs1.py` / `ceshi1.py`，不对应 `cs2.py`。普通 Tab 的完整名称优先级不变。显式选择有多个结果时，Shell 只展示候选并保留查询；没有对应项时也不改写。
+
+## 自更新事务
+
+`ptab update` 只接受标准安装布局，源代码构建目录不会被静默替换。Rust 根据正在运行的可执行文件定位 `<prefix>/share/pinyintab/update.sh`，不从 PATH 猜测更新脚本。在线脚本检查稳定版、校验归档 SHA-256、限制归档成员路径并拒绝链接，确认二进制版本后才进入替换。
+
+替换器使用安装前缀内的唯一暂存目录与独占锁，保留未知个人文件，逐项覆盖受管理的集成脚本。二进制通过重命名替换，避免 Linux 上覆盖正在运行的文件。新程序检查失败时尝试恢复旧二进制与集成目录；恢复失败保留备份并报出位置。成功后清理事务备份，下载器退出时清理下载目录。此流程不是跨两个目录的断电原子事务，强制终止和文件系统故障仍可能需要人工恢复。Shell 启动文件不修改，更新后应重新打开终端。
+
 ## 4. 命令语义
 
 Shell 集成通过 `complete-command <directory> <zero-based-index> <words...>` 共用上下文分类。独立候选接口保留以下过滤模式：
@@ -113,7 +124,7 @@ PinyinTab 补全：python3 ceshi.py<Tab> → python3 测试.py
 ## 7. 安全边界
 
 - 补全过程不执行候选文件。
-- Rust 核心不访问网络。
+- 路径匹配核心不访问网络；只有显式 `ptab update` 启动的更新辅助脚本访问 Release 服务。
 - 候选来自本地目录名称，应继续被视作不可信文本。
 - Shell 层必须正确处理空格、Unicode、控制字符、换行和转义字符。
 - 安装器只修改当前用户配置，并用固定标记保证可逆。

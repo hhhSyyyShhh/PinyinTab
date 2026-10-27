@@ -13,6 +13,7 @@ Commands:
   doctor            Show version, platform and architecture
                     The shell integration also reports shell and ON/OFF state
   version           Show the program version
+  update            Update an installed release; verification failures keep it intact
   help              Show this page (English); use "ptab help zh" for Chinese
 
 Options:
@@ -25,6 +26,7 @@ Examples:
   python3 ceshi.py<Tab>
   ./ceshi<Tab>
   ptab off
+  ptab update
 
 Notes:
   <Tab> means press the Tab key; do not type the literal characters.
@@ -39,7 +41,11 @@ Language selection (Bash 5 / Zsh, while completion is ON):
   Ctrl+X, then e    Complete non-Chinese names, or switch back after c
   On Mac use Control, not Command. These are sequential key presses.
   Exact real names stay unchanged; a space starts the next argument.
+  At a complete name, Ctrl+X then e/c selects existing whole-name counterparts.
+  Example: 测试.py -> Ctrl+X, then e -> cs.py (when it exists uniquely).
   Multiple candidates still require refinement; the plugin does not guess.
+  Updates preserve startup settings. Reopen the terminal after updating.
+  Manually downloaded archives are not automatically deleted.
 
 Advanced interfaces:
   ptab help advanced       Alias queries and the shell completion protocol

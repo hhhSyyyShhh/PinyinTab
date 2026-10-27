@@ -88,6 +88,12 @@ _pinyintab_zsh_complete() {
   # read-only candidate list instead; after the user types enough to make the
   # result unique, the normal compadd path below inserts the real filename.
   if (( ${#candidates[@]} > 1 )); then
+    if [[ "$_pinyintab_language" != auto ]]; then
+      # Explicit cross-script switches must not replace a complete Chinese
+      # name with the accidental Latin common prefix of several counterparts.
+      _message -r "${(j:  :)candidates}"
+      return 0
+    fi
     _pinyintab_common_prefix "${candidates[@]}"
     common_prefix="$REPLY"
     if [[ -z "$common_prefix" ||
@@ -185,7 +191,7 @@ ptab() {
     version|--version|-V)
       "$_pinyintab_binary" version
       ;;
-    alias|complete|complete-command)
+    alias|complete|complete-command|update)
       "$_pinyintab_binary" "$@"
       ;;
     help|--help|-h|'')

@@ -47,6 +47,15 @@ _pinyintab_complete() {
         # excluded grep pattern / heredoc delimiter back into a filename.
         compopt +o default +o bashdefault 2>/dev/null || true
     fi
+    if [[ "$language" != auto && ${#COMPREPLY[@]} -gt 1 ]]; then
+        # Display, do not insert Readline's unrelated literal common prefix.
+        # This is UI output only; the Rust candidate protocol stays unchanged.
+        printf '\n'
+        printf '%s  ' "${COMPREPLY[@]}"
+        printf '\n'
+        COMPREPLY=()
+        return 0
+    fi
     for candidate in "${COMPREPLY[@]-}"; do
         if [[ "$candidate" == */ ]]; then
             compopt -o nospace 2>/dev/null || true
@@ -143,7 +152,7 @@ ptab() {
         version|--version|-V)
             "$_pinyintab_binary" version
             ;;
-        alias|complete|complete-command)
+        alias|complete|complete-command|update)
             "$_pinyintab_binary" "$@"
             ;;
         help|--help|-h|'')

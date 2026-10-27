@@ -6,6 +6,8 @@
 
 面向 Bash 与 Zsh 的原生中文路径拼音补全插件。
 
+中文路径拼音补全：输入拼音，按 Tab，得到真实中文路径。 | Type Pinyin, press Tab, get the real Chinese path.
+
 [English](README.en.md) · [安装](#安装) · [使用](#使用) · [中英文切换](#中英文候选切换) · [兼容范围](#兼容范围)
 
 [![CI](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml/badge.svg)](https://github.com/hhhSyyyShhh/PinyinTab/actions/workflows/ci.yml)
@@ -19,7 +21,7 @@ PinyinTab 允许用户输入中文文件名或目录名的拼音，按下 <kbd>T
 
 [![PinyinTab 终端演示](assets/demo.gif)](assets/demo.mp4)
 
-> 录屏为早期版本的基本路径补全演示。v0.5.1 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
+> 录屏为早期版本的基本路径补全演示。v0.6.0 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -33,6 +35,7 @@ python3 九九乘法表.py
 - 支持用拼音逐层补全父目录和多级路径。
 - 完整真实文件名优先，避免把已经输入准确的名称再扩展为其他文件。
 - 默认 Tab 优先非中文候选；可用 Control+X 后按 c/e 明确选择中文或非中文。
+- 完整中文名称也能反向查找真实存在的全拼/首字母文件，无需重新输入查询。
 - 同组多个候选仍需继续输入筛选，不自动猜选。
 - 根据命令语义区分目录、文件和 Java 类名。
 - `ptab on` / `ptab off` 可逆，关闭时恢复原 Shell 补全器。
@@ -77,7 +80,7 @@ bash install-online.sh
 ptab version
 ```
 
-本次发布应显示 `PinyinTab 0.5.1`。GitHub 发布新版本不会自动更新你电脑里的旧程序，需要重新执行安装步骤。
+本次发布应显示 `PinyinTab 0.6.0`。已有 v0.6.0 或更新版本可用 `ptab update` 更新；更旧版本需要先按本页安装步骤升级一次。
 
 **第 6 步：手动开启补全。** 普通安装默认关闭，不会自动接管每个新终端。
 
@@ -129,17 +132,17 @@ bash install-online.sh --enable-on-startup
 <summary>Apple 芯片 Mac 手动安装</summary>
 
 ```zsh
-shasum -a 256 -c pinyintab-v0.5.1-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c pinyintab-v0.6.0-aarch64-apple-darwin.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```zsh
-tar -xzf pinyintab-v0.5.1-aarch64-apple-darwin.tar.gz
+tar -xzf pinyintab-v0.6.0-aarch64-apple-darwin.tar.gz
 ```
 
 ```zsh
-cd pinyintab-v0.5.1-aarch64-apple-darwin
+cd pinyintab-v0.6.0-aarch64-apple-darwin
 ```
 
 ```zsh
@@ -152,17 +155,17 @@ bash install.sh
 <summary>Ubuntu / CentOS Stream 9 x86_64 手动安装</summary>
 
 ```bash
-sha256sum -c pinyintab-v0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c pinyintab-v0.6.0-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```bash
-tar -xzf pinyintab-v0.5.1-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf pinyintab-v0.6.0-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```bash
-cd pinyintab-v0.5.1-x86_64-unknown-linux-gnu
+cd pinyintab-v0.6.0-x86_64-unknown-linux-gnu
 ```
 
 ```bash
@@ -172,6 +175,28 @@ bash install.sh
 </details>
 
 手动安装完成后，同样重新打开终端，再运行 `ptab version` 和 `ptab on`。SHA-256 用于检查文件与发布的校验值一致，不是病毒扫描，也不能代替对下载来源的信任。
+
+### 更新已安装版本
+
+**v0.6.0 起**，在终端直接运行：
+
+```bash
+ptab update
+```
+
+它会检查最新稳定版，按系统下载对应安装包，校验 SHA-256 并检查新程序后再替换；没有更新时不重复安装，不自动降级。下载或校验失败不会删除旧版，替换后的检查失败会尝试回滚。
+
+更新成功后，**关闭并重新打开终端**（SSH 重新连接），再依次执行：
+
+```bash
+ptab version
+```
+
+```bash
+ptab on
+```
+
+更新不改 `.bashrc` / `.zshrc`，保留原来的手动或自动启用设置。下载临时文件和成功替换的旧安装副本会清理；个人配置、项目、手动下载的安装包不会删除。若遇到断电、强制终止或磁盘故障导致回滚失败，会保留恢复目录并报告位置，不继续清理备份。更新仍需要能访问 GitHub；失败时可用上面的手动安装方式。
 
 ### 从源码安装
 
@@ -196,7 +221,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
 
 ### 卸载
 
-v0.5.1 安装后可以直接运行已安装的卸载器，不需要找回压缩包：
+v0.6.0 安装后可以直接运行已安装的卸载器，不需要找回压缩包：
 
 ```bash
 bash "$HOME/.local/share/pinyintab/uninstall.sh"
@@ -220,6 +245,8 @@ Mac 使用 **Control（⌃）**，不是 Command（⌘）。`Control+X, c` 是�
 
 - 已存在完整的 `c.py` / `cs1.py` 时，普通 Tab 不再扩展成其他名称；显式选择中文仍可访问对应中文候选。
 - 没有英文候选时，普通 Tab 继续补全中文，例如 `ceshi1.py` → `测试1.py`。
+- 直接输入 `vim 测试1.py`，光标紧挨文件名末尾，按 Control+X 后按 e，也能切为真实存在的 `cs1.py`；再按 c 可切回。它不依赖上一次 Tab，也适用于历史命令或粘贴的完整名称。
+- 完整名称切换按全名对应，保留数字、扩展名和父目录。若同时存在 `cs1.py` 与 `ceshi1.py`，只展示两项并保留输入；没有对应文件则不改动。它们是不同的真实文件，不是同一文件的别名副本。
 - `cs` 同时对应 `cs1.py/cs2.py/cs3.py` 时，会列出英文组；选择中文后列出 `测试1.py/测试2.py/测试3.py`，继续输入数字来缩小范围。多个候选不会强行选一个。
 - “英文组”准确说是**名称不含汉字**的组；中英混合名属于中文组，判断对象是最后一级名称，不是整条父目录。
 - 选择只作用于本次补全。输入空格后再补全是新的参数；空查询会展示两类非隐藏条目。编辑内容或移动光标后，不会拿旧查询改写之前的参数。
@@ -233,6 +260,7 @@ ptab off      # 关闭并恢复原补全器
 ptab status   # 查看 Shell 集成状态
 ptab doctor   # 查看版本、系统、架构、Shell 和状态
 ptab version
+ptab update   # 检查并更新已安装版本；成功后重开终端
 ptab --help   # 命令、选项、示例与使用边界（默认英文）
 ptab help zh  # 中文帮助
 ```

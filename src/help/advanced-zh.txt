@@ -27,6 +27,7 @@ complete 的过滤选项（最多选一个）：
   示例：ptab complete --language chinese . cs.py
   示例：ptab complete-command --language auto . 1 vim cs
   语言选择不能绕过命令上下文、文件类型和执行位过滤。
+  对另一组完整真实名称，使用全名拼音等价匹配，不按前缀带出编号文件。
 
 示例：
   ptab alias '测试.py'
