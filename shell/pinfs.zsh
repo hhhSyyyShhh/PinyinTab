@@ -6,7 +6,8 @@ typeset -gA _pinfs_saved_comps
 typeset -g _pinfs_saved_default=""
 typeset -ga _pinfs_commands
 _pinfs_commands=(
-  cd python python3 cat vim vi nano less head tail
+  cd python python3 python3.10 python3.11 python3.12 python3.13 python3.14
+  cat vim vi nano less head tail
   cp mv rm touch mkdir rmdir java javac julia node ruby perl bash sh
   cargo rustc gcc clang swift swiftc
 )
@@ -25,7 +26,7 @@ _pinfs_zsh_complete() {
     cd|rmdir)
       mode="--directories"
       ;;
-    cat|python|python3|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
+    cat|python|python[0-9]*|javac|julia|node|ruby|perl|bash|sh|less|head|tail|gcc|clang|rustc|swift|swiftc)
       mode="--files"
       ;;
   esac

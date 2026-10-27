@@ -73,9 +73,9 @@ fn complete(current_directory: &Path, typed: &str, filter: EntryFilter) -> std::
             continue;
         }
         let typed_pinyin = typed_name.to_ascii_lowercase();
-        if !real_name.starts_with(typed_name)
-            && !aliases.full.starts_with(&typed_pinyin)
-            && !aliases.initials.starts_with(&typed_pinyin)
+        if !candidate_matches(&real_name, typed_name)
+            && !candidate_matches(&aliases.full, &typed_pinyin)
+            && !candidate_matches(&aliases.initials, &typed_pinyin)
         {
             continue;
         }
@@ -92,6 +92,21 @@ fn complete(current_directory: &Path, typed: &str, filter: EntryFilter) -> std::
         println!("{candidate}");
     }
     Ok(())
+}
+
+fn candidate_matches(candidate: &str, typed: &str) -> bool {
+    if candidate.starts_with(typed) {
+        return true;
+    }
+
+    let Some((typed_stem, typed_extension)) = typed.rsplit_once('.') else {
+        return false;
+    };
+    let Some((candidate_stem, candidate_extension)) = candidate.rsplit_once('.') else {
+        return false;
+    };
+
+    candidate_extension == typed_extension && candidate_stem.starts_with(typed_stem)
 }
 
 fn split_typed_path(typed: &str) -> (&str, &str) {

@@ -3,12 +3,13 @@ set -eu
 
 project_dir="${0:A:h:h}"
 binary="${PINFS_BINARY:-$project_dir/target/release/pinfs-demo}"
-fixture="$(mktemp -d)"
-trap 'rm -rf "$fixture"' EXIT
+typeset -gr PINFS_MACOS_TEST_FIXTURE="$(mktemp -d)"
+trap 'rm -rf -- "$PINFS_MACOS_TEST_FIXTURE"' EXIT
 
-mkdir -p "$fixture/测试目录/内部文件夹" "$fixture/你好"
-touch "$fixture/测试.py" "$fixture/测视.py" "$fixture/项目 说明.md"
-touch "$fixture/测试目录/内部脚本.py"
+mkdir -p "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部文件夹" "$PINFS_MACOS_TEST_FIXTURE/你好"
+touch "$PINFS_MACOS_TEST_FIXTURE/测试.py" "$PINFS_MACOS_TEST_FIXTURE/测视.py" "$PINFS_MACOS_TEST_FIXTURE/项目 说明.md"
+touch "$PINFS_MACOS_TEST_FIXTURE/九九乘法表.py" "$PINFS_MACOS_TEST_FIXTURE/乘法口诀表.py"
+touch "$PINFS_MACOS_TEST_FIXTURE/测试目录/内部脚本.py"
 
 contains_line() {
   local output="$1" expected="$2"
@@ -19,20 +20,26 @@ contains_line() {
 }
 
 local result
-result="$("$binary" complete "$fixture" ce)"
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" ce)"
 contains_line "$result" "测试.py"
 contains_line "$result" "测视.py"
 
-result="$("$binary" complete "$fixture" 测试目录/nei)"
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" 测试目录/nei)"
 contains_line "$result" "测试目录/内部文件夹/"
 
-result="$("$binary" complete "$fixture" ceshimulu/neibu)"
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" ceshimulu/neibu)"
 contains_line "$result" "测试目录/内部脚本.py"
 
-result="$("$binary" complete "$fixture" ceshimulu/)"
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" ceshimulu/)"
 contains_line "$result" "测试目录/内部文件夹/"
 
-result="$("$binary" complete "$fixture" nihao --files)"
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" jiujiu.py --files)"
+contains_line "$result" "九九乘法表.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" cfkjb.py --files)"
+contains_line "$result" "乘法口诀表.py"
+
+result="$("$binary" complete "$PINFS_MACOS_TEST_FIXTURE" nihao --files)"
 [[ -z "$result" ]] || {
   print -u2 -- "FAIL: file-only completion returned a directory"
   exit 1
@@ -45,7 +52,7 @@ source "$project_dir/shell/pinfs.zsh"
 # candidate, which previously replaced the current word with a stray slash.
 typeset -ga captured_compadd
 compadd() { captured_compadd=("$@") }
-cd "$fixture"
+cd "$PINFS_MACOS_TEST_FIXTURE"
 PREFIX=nihao
 words=(cat nihao)
 captured_compadd=()
@@ -57,7 +64,7 @@ _pinfs_zsh_complete
 unfunction compadd
 
 autoload -Uz compinit
-compinit -d "$fixture/.zcompdump"
+compinit -d "$PINFS_MACOS_TEST_FIXTURE/.zcompdump"
 compdef _original_pinfs_test python3
 typeset original="${_comps[python3]}"
 pinfs on >/dev/null

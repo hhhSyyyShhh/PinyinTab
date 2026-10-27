@@ -3,17 +3,19 @@ set -euo pipefail
 
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 binary="${PINFS_BINARY:-$project_dir/target/release/pinfs-demo}"
-fixture="$(mktemp -d)"
-trap 'rm -rf "$fixture"' EXIT
+readonly PINFS_BASH_TEST_FIXTURE="$(mktemp -d)"
+trap 'rm -rf -- "$PINFS_BASH_TEST_FIXTURE"' EXIT
 
-mkdir -p "$fixture/测试目录/内部文件夹" "$fixture/你好"
-touch "$fixture/测试.py"
-touch "$fixture/测视.py"
-touch "$fixture/测试目录/内部脚本.py"
-touch "$fixture/项目 说明.md"
-touch "$fixture/录屏 2026-07-17.mov"
-touch "$fixture/README.md"
-touch "$fixture/.隐藏文件"
+mkdir -p "$PINFS_BASH_TEST_FIXTURE/测试目录/内部文件夹" "$PINFS_BASH_TEST_FIXTURE/你好"
+touch "$PINFS_BASH_TEST_FIXTURE/测试.py"
+touch "$PINFS_BASH_TEST_FIXTURE/测视.py"
+touch "$PINFS_BASH_TEST_FIXTURE/九九乘法表.py"
+touch "$PINFS_BASH_TEST_FIXTURE/乘法口诀表.py"
+touch "$PINFS_BASH_TEST_FIXTURE/测试目录/内部脚本.py"
+touch "$PINFS_BASH_TEST_FIXTURE/项目 说明.md"
+touch "$PINFS_BASH_TEST_FIXTURE/录屏 2026-07-17.mov"
+touch "$PINFS_BASH_TEST_FIXTURE/README.md"
+touch "$PINFS_BASH_TEST_FIXTURE/.隐藏文件"
 
 fail() {
     echo "FAIL: $*" >&2
@@ -25,55 +27,62 @@ contains_line() {
     grep -Fqx -- "$expected" <<<"$output" || fail "missing completion: $expected"
 }
 
-result="$($binary complete "$fixture" ce)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" ce)"
 contains_line "$result" "测试.py"
 contains_line "$result" "测视.py"
 
-result="$($binary complete "$fixture" cs)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cs)"
 contains_line "$result" "测试.py"
 
-result="$($binary complete "$fixture" 测)"
+# The extension is compared separately from the abbreviated filename stem.
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" jiujiu.py --files)"
+contains_line "$result" "九九乘法表.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" cfkjb.py --files)"
+contains_line "$result" "乘法口诀表.py"
+
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 测)"
 contains_line "$result" "测试.py"
 
-result="$($binary complete "$fixture" README)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" README)"
 contains_line "$result" "README.md"
 
-result="$($binary complete "$fixture" xiangmu)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" xiangmu)"
 contains_line "$result" "项目 说明.md"
 
-result="$($binary complete "$fixture" 测试目录/nei)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 测试目录/nei)"
 contains_line "$result" "测试目录/内部文件夹/"
 contains_line "$result" "测试目录/内部脚本.py"
 
 # V2 resolves a pinyin parent directory before completing its child.
-result="$($binary complete "$fixture" ceshimulu/nei)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" ceshimulu/nei)"
 contains_line "$result" "测试目录/内部文件夹/"
 contains_line "$result" "测试目录/内部脚本.py"
 
 # A trailing slash means: list entries inside the resolved directory.
-result="$($binary complete "$fixture" ceshimulu/)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" ceshimulu/)"
 contains_line "$result" "测试目录/内部文件夹/"
 contains_line "$result" "测试目录/内部脚本.py"
 
-result="$($binary complete "$fixture" 测试目录/)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" 测试目录/)"
 contains_line "$result" "测试目录/内部文件夹/"
 
-result="$($binary complete "$fixture" luping --files)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" luping --files)"
 contains_line "$result" "录屏 2026-07-17.mov"
 
-result="$($binary complete "$fixture" ce --directories)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" ce --directories)"
 contains_line "$result" "测试目录/"
 if grep -Fqx -- "测试.py" <<<"$result"; then
     fail "directory-only completion returned a file"
 fi
 
-result="$($binary complete "$fixture" nihao --files)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" nihao --files)"
 [[ -z "$result" ]] || fail "file-only completion returned a directory"
 
-result="$($binary complete "$fixture" nihao --directories)"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" nihao --directories)"
 contains_line "$result" "你好/"
 
-result="$($binary complete "$fixture" '')"
+result="$($binary complete "$PINFS_BASH_TEST_FIXTURE" '')"
 if grep -Fqx -- ".隐藏文件" <<<"$result"; then
     fail "empty input unexpectedly returned a hidden file"
 fi
@@ -81,7 +90,7 @@ fi
 export PINFS_BINARY="$binary"
 # shellcheck source=../shell/pinfs.bash
 source "$project_dir/shell/pinfs.bash"
-cd "$fixture"
+cd "$PINFS_BASH_TEST_FIXTURE"
 COMP_WORDS=(python3 ce)
 COMP_CWORD=1
 _pinfs_complete
@@ -102,6 +111,11 @@ COMP_WORDS=(python3 ceshimulu/neibu)
 COMP_CWORD=1
 _pinfs_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "测试目录/内部脚本.py"
+
+COMP_WORDS=(python3.12 cfkjb.py)
+COMP_CWORD=1
+_pinfs_complete
+contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "乘法口诀表.py"
 
 # The completer only uses the current word, so it also works after a pipe.
 COMP_WORDS=(cat README.md '|' python3 ce)
