@@ -21,7 +21,7 @@ PinyinTab 允许用户输入中文文件名或目录名的拼音，按下 <kbd>T
 
 [![PinyinTab 终端演示](assets/demo.gif)](assets/demo.mp4)
 
-> 录屏为早期版本的基本路径补全演示。v0.6.0 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
+> 录屏为早期版本的基本路径补全演示。v0.6.1 的中英文选择交互以[四项操作示例](#中英文候选切换)为准，旧录屏不是新版快捷键的验收记录。
 
 ```text
 python3 jiujiuchengfabiao.py<Tab>
@@ -80,7 +80,7 @@ bash install-online.sh
 ptab version
 ```
 
-本次发布应显示 `PinyinTab 0.6.0`。已有 v0.6.0 或更新版本可用 `ptab update` 更新；更旧版本需要先按本页安装步骤升级一次。
+本次发布应显示 `PinyinTab 0.6.1`。已有 v0.6.1 或更新版本可用 `ptab update` 更新；更旧版本需要先按本页安装步骤升级一次。
 
 **第 6 步：手动开启补全。** 普通安装默认关闭，不会自动接管每个新终端。
 
@@ -132,17 +132,17 @@ bash install-online.sh --enable-on-startup
 <summary>Apple 芯片 Mac 手动安装</summary>
 
 ```zsh
-shasum -a 256 -c pinyintab-v0.6.0-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c pinyintab-v0.6.1-aarch64-apple-darwin.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```zsh
-tar -xzf pinyintab-v0.6.0-aarch64-apple-darwin.tar.gz
+tar -xzf pinyintab-v0.6.1-aarch64-apple-darwin.tar.gz
 ```
 
 ```zsh
-cd pinyintab-v0.6.0-aarch64-apple-darwin
+cd pinyintab-v0.6.1-aarch64-apple-darwin
 ```
 
 ```zsh
@@ -155,17 +155,17 @@ bash install.sh
 <summary>Ubuntu / CentOS Stream 9 x86_64 手动安装</summary>
 
 ```bash
-sha256sum -c pinyintab-v0.6.0-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c pinyintab-v0.6.1-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```bash
-tar -xzf pinyintab-v0.6.0-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf pinyintab-v0.6.1-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```bash
-cd pinyintab-v0.6.0-x86_64-unknown-linux-gnu
+cd pinyintab-v0.6.1-x86_64-unknown-linux-gnu
 ```
 
 ```bash
@@ -178,7 +178,7 @@ bash install.sh
 
 ### 更新已安装版本
 
-**v0.6.0 起**，在终端直接运行：
+**v0.6.1 起**，在终端直接运行：
 
 ```bash
 ptab update
@@ -221,7 +221,7 @@ git clone https://github.com/hhhSyyyShhh/PinyinTab.git \
 
 ### 卸载
 
-v0.6.0 安装后可以直接运行已安装的卸载器，不需要找回压缩包：
+v0.6.1 安装后可以直接运行已安装的卸载器，不需要找回压缩包：
 
 ```bash
 bash "$HOME/.local/share/pinyintab/uninstall.sh"

@@ -9,7 +9,14 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.6.1] - 2026-10-27
+
+- First published release of complete-name switching and `ptab update`.
+- Bound retries for Linux `ETXTBSY` when starting a freshly copied test fixture; do not retry or mask updater failures.
+
 ## [0.6.0] - 2026-10-27
+
+> Tag retained for traceability. The release workflow stopped on an intermittent Linux test-fixture startup error before publishing archives; use v0.6.1.
 
 ### Added
 

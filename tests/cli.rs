@@ -256,12 +256,24 @@ fn installed_update_dispatches_its_own_helper_and_preserves_failure_status() {
     let binary = root.join("bin/ptab");
     fs::copy(env!("CARGO_BIN_EXE_ptab"), &binary).unwrap();
     let invoke = || {
-        Command::new(&binary)
-            .arg("update")
-            .env("PINYINTAB_INSTALL_ROOT", "/wrong-prefix")
-            .env("UPDATE_EXPECTED_ROOT", &root)
-            .output()
-            .unwrap()
+        // Parallel process tests can briefly inherit a copy's writable file
+        // descriptor across fork. Linux then rejects this freshly copied
+        // fixture with ETXTBSY until that child execs. Retry only this setup
+        // error, with a bound; never retry an updater's nonzero exit status.
+        for attempt in 0..20 {
+            let result = Command::new(&binary)
+                .arg("update")
+                .env("PINYINTAB_INSTALL_ROOT", "/wrong-prefix")
+                .env("UPDATE_EXPECTED_ROOT", &root)
+                .output();
+            match result {
+                Err(error) if error.raw_os_error() == Some(26) && attempt < 19 => {
+                    std::thread::sleep(std::time::Duration::from_millis(25));
+                }
+                result => return result.unwrap(),
+            }
+        }
+        unreachable!()
     };
     let missing = invoke();
     assert_eq!(missing.status.code(), Some(1));
