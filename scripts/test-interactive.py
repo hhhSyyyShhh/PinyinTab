@@ -28,8 +28,10 @@ class Terminal:
         self.pending = b""
         if shell.endswith("zsh"):
             setup = "PROMPT='ptab> '; RPROMPT=''; _probe() { print -r -- __BUFFER_BEGIN__; print -r -- \"$BUFFER\"; print -r -- __BUFFER_END__; BUFFER=''; zle redisplay; }; zle -N _probe; bindkey '^X^G' _probe; "
+            setup += "_original_selector() { LBUFFER+='RESTORED_KEY'; }; zle -N _original_selector; bindkey '^Xc' _original_selector; "
         else:
             setup = "PS1='ptab> '; _probe() { printf '\\n__BUFFER_BEGIN__\\n%s\\n__BUFFER_END__\\n' \"$READLINE_LINE\"; READLINE_LINE=''; READLINE_POINT=0; }; bind -x '\"\\C-x\\C-g\":_probe'; "
+            setup += "bind '\"\\C-xc\":\"RESTORED_KEY\"'; "
         self.send(setup + "source " + shlex.quote(str(integration)) + "; ptab on; printf '\\n__READY_%s__\\n' OK\n")
         self.until(b"__READY_OK__")
 
@@ -109,7 +111,7 @@ def main():
             ("chmod +x shuoming", "chmod +x 说明.txt"),
             ("head -n shuoming", "head -n shuoming"),
             ("python3 -m shuoming", "python3 -m shuoming"),
-            ("cd t", "cd t"),
+            ("cd t", "cd test/"),
             ("cd tu", "cd 图片/"),
         ]
         cases += [(f"{cmd} shuoming", f"{cmd} 说明.txt") for cmd in
@@ -120,12 +122,50 @@ def main():
                 assert actual == expected, f"{suffix}: {typed!r}: expected {expected!r}, got {actual!r}"
             spaced = terminal.probe("cat xiangmu")
             assert shlex.split(spaced) == ["cat", "项目 说明.txt"], repr(spaced)
+            # Keep the four collision examples unambiguous. The earlier
+            # 测试目录 has initials csml and is itself a valid `cs` candidate.
+            (root / "测试目录").rename(root / "归档目录")
+            for filename in ["c.py", "cs.py", "测试.py"]:
+                (root / filename).touch()
+            # Control-X is a prefix. Bare Control-C/E and typed letters remain
+            # native; no timing threshold or Tab-prefix wait is introduced.
+            selection_cases = [
+                ("vim cs", ["vim", "cs.py"]),
+                ("vim c.py", ["vim", "c.py"]),
+                ("vim cs.py", ["vim", "cs.py"]),
+                ("vim ceshi.py", ["vim", "测试.py"]),
+                ("vim cs\t\x18c", ["vim", "测试.py"]),
+                ("vim cs\t\x18c\x18e", ["vim", "cs.py"]),
+                ("vim cs\x18c", ["vim", "测试.py"]),
+                ("vim cs\tceshi", ["vim", "cs.py", "测试.py"]),
+                ("vim cs\te", ["vim", "cs.py", "e"]),
+                ("vim cs\t\x18c e", ["vim", "测试.py", "e"]),
+                ("vim cs\t\x18c c.py", ["vim", "测试.py", "c.py"]),
+                ("cd t\t\x18c", ["cd", "图片/"]),
+                ("cd t\t\x18c\x18e", ["cd", "test/"]),
+                ("grep cs\x18c", ["grep", "cs"]),
+                ("cat << cs\x18c", ["cat", "<<", "cs"]),
+            ]
+            for typed, expected in selection_cases:
+                actual = terminal.probe(typed)
+                assert shlex.split(actual) == expected, f"{suffix} selection: {typed!r}: {actual!r}, expected {expected!r}"
+            for filename in ["cs1.py", "cs2.py", "cs3.py", "测试1.py", "测试2.py", "测试3.py"]:
+                (root / filename).touch()
+            numbered_cases = [
+                ("vim cs1.py\x18c", ["vim", "测试1.py"]),
+                ("vim cs1.py\t\x18c\x18e", ["vim", "cs1.py"]),
+                ("vim cs", ["vim", "cs"]),
+            ]
+            for typed, expected in numbered_cases:
+                actual = terminal.probe(typed)
+                assert shlex.split(actual) == expected, f"{suffix} numbered: {typed!r}: {actual!r}, expected {expected!r}"
             terminal.send("./yunxing\t\n")
             terminal.until(b"PTAB_EXEC_OK\r\n")
             terminal.send("ptab off\n")
             terminal.until(b"PinyinTab completion: OFF")
             assert terminal.probe("./yunxing") == "./yunxing", "off did not restore command completion"
-            print(f"PASS: {suffix}: {len(cases) + 3} real-terminal checks (Tab buffers, quoting, execution, off)")
+            assert terminal.probe("\x18c") == "RESTORED_KEY", "off did not restore the selector key"
+            print(f"PASS: {suffix}: {len(cases) + len(selection_cases) + len(numbered_cases) + 4} real-terminal checks (Tab, language selection, quoting, execution, off)")
         finally:
             terminal.close()
 

@@ -17,6 +17,7 @@ _pinyintab_commands=(
   sudo env command exec source pushd zsh
 )
 (( ${+PINYINTAB_EXTRA_COMMANDS} )) && _pinyintab_commands+=("${PINYINTAB_EXTRA_COMMANDS[@]}")
+source "${${(%):-%x}:A:h}/keybindings.zsh"
 
 # Preserve ordinary executable/PATH completion when no path was typed.
 _pinyintab_zsh_command() {
@@ -64,15 +65,16 @@ _pinyintab_zsh_complete() {
   local current candidate output common_prefix cursor
   local -a candidates directories files request_words
   current="$PREFIX"
+  _pinyintab_did_complete=1
 
   [[ -x "$_pinyintab_binary" ]] || return 0
   if [[ -n "${_pinyintab_context_filter-}" ]]; then
-    output="$("$_pinyintab_binary" complete "$PWD" "$current" "$_pinyintab_context_filter" 2>/dev/null)"
+    output="$("$_pinyintab_binary" complete --language "$_pinyintab_language" "$PWD" "$current" "$_pinyintab_context_filter" 2>/dev/null)"
   else
     request_words=("${words[@]}")
     cursor=${CURRENT:-${#words[@]}}
     request_words[$cursor]="$current"
-    output="$("$_pinyintab_binary" complete-command "$PWD" "$((cursor - 1))" "${request_words[@]}" 2>/dev/null)"
+    output="$("$_pinyintab_binary" complete-command --language "$_pinyintab_language" "$PWD" "$((cursor - 1))" "${request_words[@]}" 2>/dev/null)"
   fi
   [[ -n "$output" ]] || return 0
   candidates=("${(@f)output}")
@@ -143,6 +145,7 @@ ptab() {
       _pinyintab_saved_redirect="${_comps[-redirect-]-}"
       _comps[-command-]=_pinyintab_zsh_command
       _comps[-redirect-]=_pinyintab_zsh_redirect
+      _pinyintab_zsh_install_keys
       _pinyintab_active=1
       echo "PinyinTab completion: ON"
       ;;
@@ -163,6 +166,7 @@ ptab() {
       unset '_comps[-command-]' '_comps[-redirect-]'
       [[ -n "$_pinyintab_saved_command" ]] && _comps[-command-]="$_pinyintab_saved_command"
       [[ -n "$_pinyintab_saved_redirect" ]] && _comps[-redirect-]="$_pinyintab_saved_redirect"
+      _pinyintab_zsh_restore_keys
       _pinyintab_active=0
       echo "PinyinTab completion: OFF"
       ;;

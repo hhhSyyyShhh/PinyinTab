@@ -19,6 +19,15 @@ complete 的过滤选项（最多选一个）：
   --executables     具有执行位的文件及可逐级导航的目录
   不加过滤选项      文件与目录
 
+语言选项（可选，放在 directory 前，两种补全接口均支持）：
+  --language all        同时返回两类候选（诊断接口默认值）
+  --language auto       非空查询优先非中文名称，没有时返回中文
+  --language chinese    名称中含汉字的候选，包括中英混合名称
+  --language english    名称中不含汉字的候选，不限于 ASCII
+  示例：ptab complete --language chinese . cs.py
+  示例：ptab complete-command --language auto . 1 vim cs
+  语言选择不能绕过命令上下文、文件类型和执行位过滤。
+
 示例：
   ptab alias '测试.py'
   ptab complete . ce --files

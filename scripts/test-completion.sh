@@ -144,6 +144,9 @@ COMP_WORDS=(cd t)
 COMP_CWORD=1
 _pinyintab_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "test/"
+[[ "${COMPREPLY[*]}" != *'图片/'* ]] || fail "auto mode did not prefer English"
+_pinyintab_next_language=chinese
+_pinyintab_complete
 contains_line "$(printf '%s\n' "${COMPREPLY[@]}")" "图片/"
 
 COMP_WORDS=(python3 ceshimulu/neibu)

@@ -19,6 +19,15 @@ Filters for complete (choose at most one):
   --executables     Executable files and navigable directories
   No filter         Files and directories
 
+Language selection (optional, BEFORE directory, for both completion commands):
+  --language all        Both groups (default for diagnostic calls)
+  --language auto       Prefer non-Han names for a non-empty query
+  --language chinese    Names containing a Han character
+  --language english    Names without Han characters (not necessarily ASCII)
+  Example: ptab complete --language chinese . cs.py
+  Example: ptab complete-command --language auto . 1 vim cs
+  Language selection does not bypass command context, permissions or types.
+
 Examples:
   ptab alias '测试.py'
   ptab complete . ce --files

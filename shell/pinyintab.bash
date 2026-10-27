@@ -18,9 +18,12 @@ _pinyintab_commands=(
 if declare -p PINYINTAB_EXTRA_COMMANDS >/dev/null 2>&1; then
     _pinyintab_commands+=("${PINYINTAB_EXTRA_COMMANDS[@]}")
 fi
+source "${BASH_SOURCE[0]%/*}/keybindings.bash"
 
 _pinyintab_complete() {
-    local current candidate
+    local current candidate previous='' command_word=0 language="$_pinyintab_next_language"
+    _pinyintab_next_language=auto
+    _pinyintab_did_complete=1
     current="${COMP_WORDS[COMP_CWORD]}"
     COMPREPLY=()
 
@@ -30,8 +33,20 @@ _pinyintab_complete() {
 
     while IFS= read -r candidate; do
         COMPREPLY[${#COMPREPLY[@]}]="$candidate"
-    done < <("$_pinyintab_binary" complete-command "$PWD" "$COMP_CWORD" "${COMP_WORDS[@]}" 2>/dev/null)
+    done < <("$_pinyintab_binary" complete-command --language "$language" "$PWD" "$COMP_CWORD" "${COMP_WORDS[@]}" 2>/dev/null)
     compopt -o filenames 2>/dev/null || true
+    if [[ "$COMP_CWORD" == 0 ]]; then
+        command_word=1
+    else
+        previous="${COMP_WORDS[COMP_CWORD-1]}"
+        case "$previous" in '|'|'||'|'&&'|';'|'&'|'(') command_word=1 ;; esac
+    fi
+    if [[ "$language" != auto || "$current" == */* || "$command_word" == 0 ]]; then
+        # Rust already includes literal paths. Native filename fallback would
+        # reinsert English files on a Chinese-only miss, or turn a deliberately
+        # excluded grep pattern / heredoc delimiter back into a filename.
+        compopt +o default +o bashdefault 2>/dev/null || true
+    fi
     for candidate in "${COMPREPLY[@]-}"; do
         if [[ "$candidate" == */ ]]; then
             compopt -o nospace 2>/dev/null || true
@@ -77,6 +92,7 @@ ptab() {
                 complete -o bashdefault -o default -F _pinyintab_complete -I
             fi
             complete -o bashdefault -o default -F _pinyintab_complete "${_pinyintab_commands[@]}"
+            _pinyintab_bash_install_keys
             _pinyintab_active=1
             echo "PinyinTab completion: ON"
             ;;
@@ -108,6 +124,7 @@ ptab() {
                 fi
                 index=$((index + 1))
             done
+            _pinyintab_bash_restore_keys
             _pinyintab_active=0
             echo "PinyinTab completion: OFF"
             ;;

@@ -29,6 +29,8 @@ status_in_clean_bash() {
 "$project_dir/install.sh" --shell bash >/dev/null
 [[ -x "$HOME/.local/bin/ptab" ]] || fail "binary was not installed"
 [[ -f "$HOME/.local/share/pinyintab/pinyintab.bash" ]] || fail "Bash integration was not installed"
+[[ -f "$HOME/.local/share/pinyintab/keybindings.bash" ]] || fail "Bash keybindings were not installed"
+[[ -x "$HOME/.local/share/pinyintab/uninstall.sh" ]] || fail "installed uninstaller is missing"
 grep -Fq '# >>> PinyinTab >>>' "$HOME/.bashrc" || fail "managed startup block is missing"
 if grep -Fq 'ptab on >/dev/null' "$HOME/.bashrc"; then
     fail "default installation enabled completion automatically"
@@ -91,6 +93,18 @@ if command -v zsh >/dev/null 2>&1; then
     [[ "$zsh_status" == 'PinyinTab completion: ON (Zsh)' ]] || {
         fail "opt-in Zsh session did not start with completion enabled"
     }
+
+    # Zsh can intentionally keep its configuration outside HOME.
+    export ZDOTDIR="$temporary_root/zsh-config"
+    mkdir -p "$ZDOTDIR"
+    printf '%s\n' 'export PINYINTAB_ZDOTDIR_PRESERVED=1' >"$ZDOTDIR/.zshrc"
+    "$project_dir/install.sh" --shell zsh >/dev/null
+    grep -Fq '# >>> PinyinTab >>>' "$ZDOTDIR/.zshrc" || fail "ZDOTDIR was ignored"
+    bash "$HOME/.local/share/pinyintab/uninstall.sh" >/dev/null
+    grep -Fq 'PINYINTAB_ZDOTDIR_PRESERVED=1' "$ZDOTDIR/.zshrc" || fail "ZDOTDIR user configuration was removed"
+    if grep -Fq '# >>> PinyinTab >>>' "$ZDOTDIR/.zshrc"; then
+        fail "ZDOTDIR managed block survived uninstall"
+    fi
 fi
 
 echo "PASS: PinyinTab installer startup-policy tests"

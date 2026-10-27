@@ -49,6 +49,52 @@ fn command_protocol_returns_paths_and_reports_missing_directories() {
 }
 
 #[test]
+fn language_selection_keeps_protocol_data_and_command_context_separate() {
+    let directory = format!("{}/demo-source", env!("CARGO_MANIFEST_DIR"));
+    for command in ["complete", "complete-command"] {
+        for (language, expected) in [
+            ("chinese", "测试.py\n"),
+            ("auto", "测试.py\n"),
+            ("english", ""),
+        ] {
+            let mut args = vec![command, "--language", language, &directory];
+            if command == "complete-command" {
+                args.extend(["1", "vim"]);
+            }
+            args.push("ceshi.py");
+            let result = run(&args);
+            assert!(result.status.success(), "{args:?}");
+            assert!(result.stderr.is_empty());
+            assert_eq!(String::from_utf8(result.stdout).unwrap(), expected);
+        }
+        for args in [
+            vec![command, "--language"],
+            vec![command, "--language", "invalid"],
+            vec![command, "--language", "auto"],
+        ] {
+            let result = run(&args);
+            assert_eq!(result.status.code(), Some(2), "{args:?}");
+            assert!(result.stdout.is_empty());
+            assert!(!result.stderr.is_empty());
+        }
+    }
+    let result = run(&[
+        "complete-command",
+        "--language",
+        "chinese",
+        &directory,
+        "1",
+        "grep",
+        "ceshi",
+    ]);
+    assert!(result.status.success());
+    assert!(
+        result.stdout.is_empty(),
+        "language selection must not turn a grep pattern into a path"
+    );
+}
+
+#[test]
 fn help_aliases_use_stdout_and_succeed() {
     let expected = run(&["--help"]).stdout;
     for args in [
