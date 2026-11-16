@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 archive="${1:-}"
 if [[ -z "$archive" || ! -f "$archive" ]]; then
     echo "Usage: $0 <pinyintab-release.tar.gz>" >&2
@@ -31,6 +33,20 @@ chmod +x "$PINYINTAB_RELEASE_FIXTURE/运行程序"
     echo 'FAIL: release is missing update helpers' >&2
     exit 1
 }
+# The compatibility containers need not have diffutils. Hash stdin so the
+# comparison ignores the filename but still checks every byte.
+if command -v sha256sum >/dev/null 2>&1; then
+    checksum=(sha256sum)
+else
+    checksum=(shasum -a 256)
+fi
+expected_updater="$("${checksum[@]}" <"$project_dir/scripts/install-online.sh")"
+for updater in "$package_dir/update.sh" "$HOME/.local/share/pinyintab/update.sh"; do
+    [[ "$("${checksum[@]}" <"$updater")" == "$expected_updater" ]] || {
+        printf 'FAIL: updater does not match the tested source: %s\n' "$updater" >&2
+        exit 1
+    }
+done
 
 status="$(bash --noprofile --norc -c 'source "$HOME/.bashrc"; ptab status')"
 [[ "$status" == 'PinyinTab completion: OFF (Bash)' ]] || {

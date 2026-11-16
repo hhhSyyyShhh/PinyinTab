@@ -8,6 +8,7 @@ import hashlib
 import io
 import json
 import os
+import pty
 import shutil
 import subprocess
 import tarfile
@@ -20,7 +21,8 @@ CHECKS = 0
 
 
 def fixture(root, *, tag="v0.6.0", bad_hash=False, fail_download=False,
-            bad_doctor=False, missing=False, unsafe=False, link=False):
+            bad_doctor=False, missing=False, unsafe=False, link=False,
+            http2_error="", error_code=16, fail_fallback=False):
     prefix = root / "prefix"
     share = prefix / "share/pinyintab"
     share.mkdir(parents=True)
@@ -76,12 +78,24 @@ args = sys.argv[1:]
 url = next((word for word in args if word.startswith("https://")), "")
 with (root / "requests").open("a") as stream:
     stream.write(url + "\\n")
+with (root / "curl-args").open("a") as stream:
+    import json
+    stream.write(json.dumps(args) + "\\n")
 if os.environ.get("FAIL_DOWNLOAD") == "1":
     sys.exit(28)
+output = pathlib.Path(args[args.index("-o") + 1])
+kind = "metadata" if url.endswith("/releases/latest") else (
+    "checksum" if url.endswith(".sha256") else "archive"
+)
+if os.environ["MOCK_HTTP2_ERROR"] == kind and (
+        "--http1.1" not in args or os.environ["MOCK_FAIL_FALLBACK"] == "1"):
+    output.write_bytes(b"partial download")
+    print("curl: simulated HTTP/2 error", file=sys.stderr)
+    sys.exit(int(os.environ["MOCK_HTTP2_CODE"]))
 if url.endswith("/releases/latest"):
-    print((root / "metadata").read_text())
+    shutil.copyfile(root / "metadata", output)
 else:
-    shutil.copyfile(root / url.rsplit("/", 1)[-1], args[args.index("-o") + 1])
+    shutil.copyfile(root / url.rsplit("/", 1)[-1], output)
 ''')
     mock.chmod(0o755)
     scratch = root / "scratch"
@@ -89,21 +103,46 @@ else:
     env = dict(os.environ, HOME=str(root / "home"), TMPDIR=str(scratch),
                PINYINTAB_INSTALL_ROOT=str(prefix), UPDATE_FIXTURE=str(root),
                PATH=str(tools) + os.pathsep + os.environ["PATH"],
-               FAIL_DOWNLOAD="1" if fail_download else "0")
+               FAIL_DOWNLOAD="1" if fail_download else "0",
+               MOCK_HTTP2_ERROR=http2_error, MOCK_HTTP2_CODE=str(error_code),
+               MOCK_FAIL_FALLBACK="1" if fail_fallback else "0", TERM="xterm")
     env.pop("PINYINTAB_REPOSITORY", None)
     return prefix, env, scratch
 
 
-def run_case(label, *, current="0.5.1", success=True, changed=True, locked=False, **options):
+def run_case(label, *, current="0.5.1", success=True, changed=True, locked=False, tty=False, **options):
     global CHECKS
     with tempfile.TemporaryDirectory(prefix="pinyintab-update-test-") as directory:
         root = Path(directory)
         prefix, env, scratch = fixture(root, **options)
         if locked:
             (prefix / ".pinyintab-update-lock").mkdir()
-        result = subprocess.run(["bash", str(PROJECT / "scripts/install-online.sh"), "--update", current],
-                                env=env, capture_output=True, text=True)
+        command = ["bash", str(PROJECT / "scripts/install-online.sh"), "--update", current]
+        if tty:
+            master, slave = pty.openpty()
+            try:
+                result = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=slave,
+                                        text=True, timeout=20)
+            finally:
+                os.close(slave)
+                os.close(master)
+        else:
+            result = subprocess.run(command, env=env, capture_output=True, text=True)
         assert (result.returncode == 0) == success, (label, result.stdout, result.stderr)
+        calls = [json.loads(line) for line in (root / "curl-args").read_text().splitlines()]
+        assert sum("--progress-bar" in call for call in calls) == int(tty), (label, calls)
+        fallback = [call for call in calls if "--http1.1" in call]
+        assert len(fallback) == int(bool(options.get("http2_error"))), (label, calls)
+        if fallback:
+            call = fallback[0]
+            assert call[call.index("--retry") + 1] == "0", (label, call)
+            assert "--tlsv1.2" in call and call[call.index("--proto") + 1] == "=https", (label, call)
+        if not tty:
+            assert "[1/4]" in result.stderr
+            if changed and success:
+                assert "[2/4]" in result.stderr and "[3/4]" in result.stderr and "[4/4]" in result.stderr
+            if options.get("fail_fallback"):
+                assert "installed files were not changed" in result.stderr and "[4/4]" not in result.stderr
         expected = options.get("tag", "v0.6.0")[1:] if changed and success else "0.5.1"
         actual = subprocess.check_output([str(prefix / "bin/ptab"), "version"], text=True)
         assert actual.strip() == f"PinyinTab {expected}", (label, actual)
@@ -129,10 +168,15 @@ def run_case(label, *, current="0.5.1", success=True, changed=True, locked=False
 def main():
     global CHECKS
     run_case("verified update")
+    run_case("interactive download uses curl progress bar", tty=True)
     run_case("same version", current="0.6.0", changed=False)
     run_case("no downgrade", current="0.7.0", changed=False)
     run_case("numeric ordering", current="0.9.0", tag="v0.10.0")
     run_case("network failure", fail_download=True, success=False)
+    run_case("HTTP/2 metadata fallback", http2_error="metadata")
+    run_case("HTTP/2 archive fallback", http2_error="archive")
+    run_case("HTTP/2 checksum stream fallback", http2_error="checksum", error_code=92)
+    run_case("HTTP/1.1 fallback fails", http2_error="archive", fail_fallback=True, success=False)
     run_case("bad checksum", bad_hash=True, success=False)
     run_case("startup check rollback", bad_doctor=True, success=False)
     run_case("missing helper", missing=True, success=False)
