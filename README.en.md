@@ -108,6 +108,8 @@ personal files are preserved. Temporary downloads and successful transaction
 backups are removed, not manually downloaded archives. Recovery failures retain
 backups and report their location. GitHub access is still required.
 
+Since v0.6.3, interactive updates show a download progress bar and report each stage. An HTTP/2 transfer failure is retried once over HTTPS using HTTP/1.1.
+
 ### Oh My Zsh
 
 After installing the binary, clone the repository as an Oh My Zsh custom plugin:

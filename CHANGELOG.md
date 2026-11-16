@@ -15,6 +15,12 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.6.3] - 2026-11-16
+
+- Show update stages and a single-line progress bar during package downloads in interactive terminals.
+- Retry an HTTP/2 transfer error once over HTTPS using HTTP/1.1; keep the current installation if the download or verification fails.
+- Verify in release tests that the packaged and installed updater matches the tested source.
+
 ## [0.6.2] - 2026-11-16
 
 - Keep `ptab on` for one terminal. Add `ptab on --until-reboot` for the current boot and `ptab on --startup` for future terminals across reboots.

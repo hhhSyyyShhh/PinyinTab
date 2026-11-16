@@ -47,18 +47,32 @@ trap 'rm -rf -- "$temp_dir"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' HUP TERM
 
-# Bound every request, including the checksum request after the archive.
+# Bound each request. An HTTP/2 transport failure can happen even after
+# GitHub returned the version metadata. Retry that request once over HTTP/1.1.
 download() {
-    curl --proto '=https' --tlsv1.2 --connect-timeout 10 --max-time 120 \
-        --retry 2 --retry-delay 2 "$@"
+    local status
+    local -a limits=(--proto '=https' --tlsv1.2 --connect-timeout 10 --max-time 120)
+    if curl "${limits[@]}" --retry 2 --retry-delay 2 "$@"; then
+        return 0
+    else
+        status=$?
+    fi
+    case "$status" in
+        16|92)
+            printf '%s\n' 'HTTP/2 transfer failed; retrying over HTTPS with HTTP/1.1.' >&2
+            curl "${limits[@]}" --http1.1 --retry 0 "$@"
+            ;;
+        *) return "$status" ;;
+    esac
 }
 
-if ! release_json="$(download -fsSL "https://api.github.com/repos/$repository/releases/latest")"; then
+printf '%s\n' '[1/4] Checking the latest release...' >&2
+if ! download -fsSL "https://api.github.com/repos/$repository/releases/latest" -o "$temp_dir/latest.json"; then
     echo 'error: could not check the latest release; installed files were not changed' >&2
     echo "Check GitHub connectivity/API limits, or install manually from https://github.com/$repository/releases/latest" >&2
     exit 1
 fi
-tag="$(printf '%s\n' "$release_json" | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n 1)"
+tag="$(sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' "$temp_dir/latest.json" | head -n 1)"
 if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "error: latest release does not have a supported version tag" >&2
     exit 1
@@ -82,8 +96,21 @@ fi
 
 archive="pinyintab-${tag}-${target}.tar.gz"
 base_url="https://github.com/$repository/releases/download/$tag"
-download -fL "$base_url/$archive" -o "$temp_dir/$archive"
-download -fL "$base_url/$archive.sha256" -o "$temp_dir/$archive.sha256"
+printf '[2/4] Downloading %s...\n' "$archive" >&2
+if [[ -t 2 && "${TERM:-dumb}" != dumb ]]; then
+    archive_options=(-fL --progress-bar)
+else
+    archive_options=(-fsSL)
+fi
+if ! download "${archive_options[@]}" "$base_url/$archive" -o "$temp_dir/$archive"; then
+    printf '%s\n' 'error: could not download the archive; installed files were not changed' >&2
+    exit 1
+fi
+printf '%s\n' '[3/4] Checking SHA-256 and package contents...' >&2
+if ! download -fsSL "$base_url/$archive.sha256" -o "$temp_dir/$archive.sha256"; then
+    printf '%s\n' 'error: could not download the checksum; installed files were not changed' >&2
+    exit 1
+fi
 
 expected="$(awk 'NR == 1 {print tolower($1)} END {if (NR != 1) exit 1}' "$temp_dir/$archive.sha256")"
 [[ "$expected" =~ ^[0-9a-fA-F]{64}$ ]] || {
@@ -119,9 +146,11 @@ package="$temp_dir/$package_name"
     exit 1
 }
 if [[ -n "$update_version" ]]; then
+    printf '%s\n' '[4/4] Replacing the installed version...' >&2
     bash "$package/apply-update.sh" "$package"
     echo "Updated to PinyinTab ${tag#v}. Temporary downloads and the old managed installation were removed."
     echo 'Restart the terminal (or reconnect SSH), then run: ptab version; ptab on'
 else
+    printf '%s\n' '[4/4] Installing PinyinTab...' >&2
     "$package/install.sh" "$@"
 fi

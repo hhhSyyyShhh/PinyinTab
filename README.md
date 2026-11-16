@@ -130,17 +130,17 @@ bash install-online.sh --enable-on-startup
 <summary>Apple 芯片 Mac 手动安装</summary>
 
 ```zsh
-shasum -a 256 -c pinyintab-v0.6.2-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c pinyintab-v0.6.3-aarch64-apple-darwin.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```zsh
-tar -xzf pinyintab-v0.6.2-aarch64-apple-darwin.tar.gz
+tar -xzf pinyintab-v0.6.3-aarch64-apple-darwin.tar.gz
 ```
 
 ```zsh
-cd pinyintab-v0.6.2-aarch64-apple-darwin
+cd pinyintab-v0.6.3-aarch64-apple-darwin
 ```
 
 ```zsh
@@ -153,17 +153,17 @@ bash install.sh
 <summary>Ubuntu / CentOS Stream 9 x86_64 手动安装</summary>
 
 ```bash
-sha256sum -c pinyintab-v0.6.2-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c pinyintab-v0.6.3-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```bash
-tar -xzf pinyintab-v0.6.2-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf pinyintab-v0.6.3-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```bash
-cd pinyintab-v0.6.2-x86_64-unknown-linux-gnu
+cd pinyintab-v0.6.3-x86_64-unknown-linux-gnu
 ```
 
 ```bash
@@ -183,6 +183,8 @@ ptab update
 ```
 
 它会检查最新稳定版，按系统下载对应安装包，校验 SHA-256 并检查新程序后再替换；没有更新时不重复安装，不自动降级。下载或校验失败不会删除旧版，替换后的检查失败会尝试回滚。
+
+从 v0.6.3 起，交互终端会显示检查、下载、校验和替换四个阶段，下载时有单行进度条。遇到 HTTP/2 传输错误会改用 HTTP/1.1 重试一次，仍通过 HTTPS 下载。
 
 更新成功后，**关闭并重新打开终端**（SSH 重新连接），再依次执行：
 
