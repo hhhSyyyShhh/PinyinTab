@@ -13,6 +13,7 @@ fi
 temporary_home="$(mktemp -d)"
 trap 'rm -rf -- "$temporary_home"' EXIT
 export HOME="$temporary_home"
+unset XDG_STATE_HOME
 
 source "$project_dir/pinyintab.plugin.zsh"
 
@@ -21,10 +22,11 @@ if (( ! _pinyintab_active )); then
   exit 1
 fi
 
-if [[ "$(ptab status)" != "PinyinTab completion: ON (Zsh)" ]]; then
+if [[ "$(ptab status)" != "PinyinTab completion: ON (Zsh) [startup]" ]]; then
   print -u2 -- "FAIL: unexpected plugin status"
   exit 1
 fi
 
 ptab off >/dev/null
+[[ "$(zsh -f -c 'source "$1"; ptab status' zsh "$project_dir/pinyintab.plugin.zsh")" == 'PinyinTab completion: OFF (Zsh)' ]]
 print -- "PASS: PinyinTab Oh My Zsh entry-point test"

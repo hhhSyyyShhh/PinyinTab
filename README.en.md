@@ -160,7 +160,9 @@ it unchanged. These are distinct existing files, not renamed files or copies.
 ## Usage
 
 ```bash
-ptab on       # enable in the current shell
+ptab on                 # enable only in the current terminal
+ptab on --until-reboot  # also enable in new terminals until reboot
+ptab on --startup       # enable in new terminals, including after reboot
 ptab off      # restore the previous completers
 ptab status   # show shell integration state
 ptab doctor   # show version, platform, architecture, shell, and state
@@ -173,6 +175,8 @@ ptab help zh  # Chinese help
 Help does not change completion state. Use `ptab help advanced` for diagnostic
 interfaces. The `on/off/status` commands require the integration loaded in the
 current shell; a standalone child process cannot change its parent shell.
+
+`ptab off` also clears shared activation. Open terminals pick up shared changes at the next prompt. An independently enabled terminal keeps its local setting.
 
 Use normal commands and press <kbd>Tab</kbd> on the Pinyin path:
 

@@ -8,12 +8,18 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 
 - Shortened the bilingual project description and public documentation; installation, verification and compatibility instructions are retained.
 - Clarified the project description to say "complete the Chinese path".
-- Kept the PinFS source imports (0.1.0 and 0.2.0–0.2.4) on `archive/early-prototypes` and their tags; removed the backfilled Release entries to avoid mixing import dates with the release chronology. The current release remains 0.6.1.
+- Kept the PinFS source imports (0.1.0 and 0.2.0–0.2.4) on `archive/early-prototypes` and their tags; removed the backfilled Release entries to avoid mixing import dates with the release chronology.
 
 ### Planned
 
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
+
+## [0.6.2] - 2026-11-16
+
+- Keep `ptab on` for one terminal. Add `ptab on --until-reboot` for the current boot and `ptab on --startup` for future terminals across reboots.
+- `ptab off` clears a shared activation mode, and `ptab status` shows the effective mode. Open terminals pick up shared changes at the next prompt.
+- Test activation across independent shells, stale boot identifiers, startup opt-in, and shared disable.
 
 ## [0.6.1] - 2026-10-27
 

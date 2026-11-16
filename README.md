@@ -130,17 +130,17 @@ bash install-online.sh --enable-on-startup
 <summary>Apple 芯片 Mac 手动安装</summary>
 
 ```zsh
-shasum -a 256 -c pinyintab-v0.6.1-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c pinyintab-v0.6.2-aarch64-apple-darwin.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```zsh
-tar -xzf pinyintab-v0.6.1-aarch64-apple-darwin.tar.gz
+tar -xzf pinyintab-v0.6.2-aarch64-apple-darwin.tar.gz
 ```
 
 ```zsh
-cd pinyintab-v0.6.1-aarch64-apple-darwin
+cd pinyintab-v0.6.2-aarch64-apple-darwin
 ```
 
 ```zsh
@@ -153,17 +153,17 @@ bash install.sh
 <summary>Ubuntu / CentOS Stream 9 x86_64 手动安装</summary>
 
 ```bash
-sha256sum -c pinyintab-v0.6.1-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c pinyintab-v0.6.2-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```bash
-tar -xzf pinyintab-v0.6.1-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf pinyintab-v0.6.2-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```bash
-cd pinyintab-v0.6.1-x86_64-unknown-linux-gnu
+cd pinyintab-v0.6.2-x86_64-unknown-linux-gnu
 ```
 
 ```bash
@@ -253,9 +253,11 @@ Mac 使用 **Control（⌃）**，不是 Command（⌘）。`Control+X, c` 是�
 ## 使用
 
 ```bash
-ptab on       # 在当前 Shell 启用
-ptab off      # 关闭并恢复原补全器
-ptab status   # 查看 Shell 集成状态
+ptab on                 # 只开启当前终端
+ptab on --until-reboot  # 本次开机期间，新开的终端也生效
+ptab on --startup       # 新开的终端自动开启，重启后仍生效
+ptab off                # 关闭当前终端的补全，取消共享开启
+ptab status             # 查看当前终端的补全状态和开启方式
 ptab doctor   # 查看版本、系统、架构、Shell 和状态
 ptab version
 ptab update   # 检查并更新已安装版本；成功后重开终端
@@ -265,6 +267,8 @@ ptab help zh  # 中文帮助
 
 帮助不改变补全状态。高级诊断接口见 `ptab help advanced zh`；
 `on/off/status` 必须由当前终端加载的 Shell 集成执行，不能通过独立子进程改变父 Shell。
+
+三个开启方式选一个即可。已经打开的其他终端会在下一次显示提示符时同步共享状态，按一次回车即可刷新；单独用 `ptab on` 开启的其他终端仍保留自己的开关。
 
 启用后照常输入命令，并在拼音路径处按 <kbd>Tab</kbd>：
 

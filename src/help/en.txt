@@ -6,8 +6,11 @@ Usage:
 
 Shell commands (require the Bash/Zsh integration to be loaded):
   on                Enable completion in the current shell
-  off               Disable it and restore previous completers; not uninstall
-  status            Show whether completion is enabled in this shell
+  on --until-reboot Enable in new shells until reboot or ptab off
+  on --startup      Enable in new shells across reboots, until ptab off
+  off               Disable completion and clear any shared activation mode
+                    Restore previous completers; do not uninstall
+  status            Show completion status and activation mode
 
 Commands:
   doctor            Show version, platform and architecture
@@ -32,8 +35,9 @@ Notes:
   <Tab> means press the Tab key; do not type the literal characters.
   Completion inserts a real path. It never renames files or runs candidates.
   ./ completion requires an executable file (or a directory to navigate).
-  on/off affect this shell only. Normal installs start OFF in new shells.
-  The optional startup flag and Oh My Zsh plugin can explicitly opt in.
+  New shells start OFF unless a shared mode was selected.
+  Already open shells pick up shared changes at the next prompt.
+  The installer startup flag selects the same mode as on --startup.
 
 Language selection (Bash 5 / Zsh, while completion is ON):
   Tab               Prefer non-Chinese names; use Chinese if none match

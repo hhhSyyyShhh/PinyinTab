@@ -19,9 +19,10 @@
     done
   fi
 
-  source "$plugin_root/shell/pinyintab.zsh"
-  if [[ -x "$_pinyintab_binary" ]]; then
-    ptab on >/dev/null
+  # The plugin-manager entry opts in by default, unless a mode was saved.
+  if [[ -x "${PINYINTAB_BINARY:-$HOME/.local/bin/ptab}" ]]; then
+    typeset -g _pinyintab_plugin_default=1
+    source "$plugin_root/shell/pinyintab.zsh"
   else
     print -u2 -- "PinyinTab: ptab binary not found; install a Release or build the project first."
   fi

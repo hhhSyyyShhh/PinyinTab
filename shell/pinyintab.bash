@@ -64,11 +64,65 @@ _pinyintab_complete() {
     done
 }
 
-ptab() {
+_pinyintab_enable() {
     local command spec index
+    _pinyintab_saved_specs=()
+    index=0
+    for command in "${_pinyintab_commands[@]}"; do
+        spec="$(complete -p "$command" 2>/dev/null || true)"
+        _pinyintab_saved_specs[$index]="$spec"
+        index=$((index + 1))
+    done
+
+    if help complete 2>/dev/null | grep -q -- '-D'; then
+        _pinyintab_saved_default="$(complete -p -D 2>/dev/null || true)"
+        complete -o bashdefault -o default -F _pinyintab_complete -D
+    fi
+    # -D applies to arguments, not the command word. Bash 5's -I hook
+    # is needed for ./pinyin<Tab>, including after a pipeline delimiter.
+    if help complete 2>/dev/null | grep -q -- '-I'; then
+        _pinyintab_saved_initial="$(complete -p -I 2>/dev/null || true)"
+        complete -o bashdefault -o default -F _pinyintab_complete -I
+    fi
+    complete -o bashdefault -o default -F _pinyintab_complete "${_pinyintab_commands[@]}"
+    _pinyintab_bash_install_keys
+    _pinyintab_active=1
+}
+
+_pinyintab_disable() {
+    local command spec index
+    if help complete 2>/dev/null | grep -q -- '-D'; then
+        complete -r -D 2>/dev/null || true
+        if [[ -n "$_pinyintab_saved_default" ]]; then
+            eval "$_pinyintab_saved_default"
+        fi
+    fi
+    if help complete 2>/dev/null | grep -q -- '-I'; then
+        complete -r -I 2>/dev/null || true
+        if [[ -n "$_pinyintab_saved_initial" ]]; then
+            eval "$_pinyintab_saved_initial"
+        fi
+    fi
+
+    index=0
+    for command in "${_pinyintab_commands[@]}"; do
+        complete -r "$command" 2>/dev/null || true
+        spec="${_pinyintab_saved_specs[$index]}"
+        if [[ -n "$spec" ]]; then
+            eval "$spec"
+        fi
+        index=$((index + 1))
+    done
+    _pinyintab_bash_restore_keys
+    _pinyintab_active=0
+}
+
+source "${BASH_SOURCE[0]%/*}/activation.sh"
+
+ptab() {
     # Shell state commands accept no operands; reject typos before changing state.
     case "${1:-}" in
-        on|off|status|doctor|version|--version|-V)
+        off|status|doctor|version|--version|-V)
             if [[ $# -gt 1 ]]; then
                 printf '%s\n' "error: $1 does not accept extra arguments" "Try 'ptab --help'." >&2
                 return 2
@@ -77,73 +131,15 @@ ptab() {
     esac
     case "${1:-}" in
         on)
-            if [[ "$_pinyintab_active" == 1 ]]; then
-                echo "PinyinTab completion: already ON"
-                return 0
-            fi
-
-            _pinyintab_saved_specs=()
-            index=0
-            for command in "${_pinyintab_commands[@]}"; do
-                spec="$(complete -p "$command" 2>/dev/null || true)"
-                _pinyintab_saved_specs[$index]="$spec"
-                index=$((index + 1))
-            done
-
-            if help complete 2>/dev/null | grep -q -- '-D'; then
-                _pinyintab_saved_default="$(complete -p -D 2>/dev/null || true)"
-                complete -o bashdefault -o default -F _pinyintab_complete -D
-            fi
-            # -D applies to arguments, not the command word. Bash 5's -I hook
-            # is needed for ./pinyin<Tab>, including after a pipeline delimiter.
-            if help complete 2>/dev/null | grep -q -- '-I'; then
-                _pinyintab_saved_initial="$(complete -p -I 2>/dev/null || true)"
-                complete -o bashdefault -o default -F _pinyintab_complete -I
-            fi
-            complete -o bashdefault -o default -F _pinyintab_complete "${_pinyintab_commands[@]}"
-            _pinyintab_bash_install_keys
-            _pinyintab_active=1
-            echo "PinyinTab completion: ON"
-            ;;
-        off)
-            if [[ "$_pinyintab_active" != 1 ]]; then
-                echo "PinyinTab completion: already OFF"
-                return 0
-            fi
-
-            if help complete 2>/dev/null | grep -q -- '-D'; then
-                complete -r -D 2>/dev/null || true
-                if [[ -n "$_pinyintab_saved_default" ]]; then
-                    eval "$_pinyintab_saved_default"
-                fi
-            fi
-            if help complete 2>/dev/null | grep -q -- '-I'; then
-                complete -r -I 2>/dev/null || true
-                if [[ -n "$_pinyintab_saved_initial" ]]; then
-                    eval "$_pinyintab_saved_initial"
-                fi
-            fi
-
-            index=0
-            for command in "${_pinyintab_commands[@]}"; do
-                complete -r "$command" 2>/dev/null || true
-                spec="${_pinyintab_saved_specs[$index]}"
-                if [[ -n "$spec" ]]; then
-                    eval "$spec"
-                fi
-                index=$((index + 1))
-            done
-            _pinyintab_bash_restore_keys
-            _pinyintab_active=0
-            echo "PinyinTab completion: OFF"
-            ;;
-        status)
-            if [[ "$_pinyintab_active" == 1 ]]; then
-                echo "PinyinTab completion: ON (Bash)"
+            shift
+            if [[ $# == 0 ]] &&
+                _pinyintab_has_legacy_call "${BASH_SOURCE[1]-}" "${BASH_LINENO[0]-}"; then
+                _pinyintab_legacy_on
             else
-                echo "PinyinTab completion: OFF (Bash)"
-            fi
-            ;;
+                _pinyintab_policy_on "$@"
+            fi ;;
+        off) _pinyintab_policy_off ;;
+        status) _pinyintab_policy_status Bash ;;
         doctor)
             "$_pinyintab_binary" doctor
             echo "shell: bash ${BASH_VERSION}"
@@ -166,3 +162,13 @@ ptab() {
             ;;
     esac
 }
+
+if [[ $- == *i* && ${_pinyintab_prompt_registered:-0} == 0 ]]; then
+    if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" == 'declare -a'* ]]; then
+        PROMPT_COMMAND+=(_pinyintab_prompt_sync)
+    else
+        PROMPT_COMMAND="_pinyintab_prompt_sync${PROMPT_COMMAND:+;${PROMPT_COMMAND}}"
+    fi
+    _pinyintab_prompt_registered=1
+fi
+_pinyintab_sync

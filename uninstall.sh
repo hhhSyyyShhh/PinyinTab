@@ -26,5 +26,8 @@ if [[ -n "${ZDOTDIR:-}" && "$ZDOTDIR" != "$HOME" ]]; then
 fi
 rm -f "$INSTALL_ROOT/bin/ptab"
 rm -rf "$INSTALL_ROOT/share/pinyintab"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/pinyintab"
+[[ "$state_dir" == /* ]] || state_dir="$HOME/.local/state/pinyintab"
+rm -f -- "$state_dir/activation"
 
 echo "PinyinTab was removed. Restart the terminal to clear the loaded shell function."
