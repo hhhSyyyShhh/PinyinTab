@@ -14,7 +14,7 @@ share_dir="$prefix/share/pinyintab"
     echo 'error: no regular PinyinTab installation found; run the installer instead' >&2
     exit 1
 }
-for source in bin/ptab shell/pinyintab.bash shell/pinyintab.zsh shell/keybindings.bash shell/keybindings.zsh uninstall.sh update.sh; do
+for source in bin/ptab shell/pinyintab.bash shell/pinyintab.zsh shell/keybindings.bash shell/keybindings.zsh shell/activation.sh uninstall.sh update.sh; do
     [[ -f "$package/$source" && ! -L "$package/$source" ]] || {
         echo "error: incomplete update package: $source" >&2
         exit 1
@@ -70,7 +70,7 @@ stage="$(mktemp -d "$prefix/.pinyintab-update.XXXXXX")"
 mkdir "$stage/share"
 # Unknown user files/configuration are retained, not guessed to be old data.
 cp -pR "$share_dir/." "$stage/share/"
-for integration in pinyintab.bash pinyintab.zsh keybindings.bash keybindings.zsh; do
+for integration in pinyintab.bash pinyintab.zsh keybindings.bash keybindings.zsh activation.sh; do
     rm -f -- "$stage/share/$integration"
     install -m 644 "$package/shell/$integration" "$stage/share/$integration"
 done

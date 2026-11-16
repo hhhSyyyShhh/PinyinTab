@@ -122,6 +122,7 @@ fn help_aliases_use_stdout_and_succeed() {
     }
     assert!(text.contains(env!("CARGO_PKG_VERSION")));
     assert!(text.contains("not uninstall"));
+    assert!(text.contains("--until-reboot") && text.contains("--startup"));
     assert!(!text.contains("complete-command <"));
 }
 

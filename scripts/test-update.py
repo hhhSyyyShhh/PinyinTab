@@ -32,6 +32,9 @@ def fixture(root, *, tag="v0.6.0", bad_hash=False, fail_download=False,
     (share / "personal.toml").write_text("keep = true\n")
     (root / "home").mkdir()
     (root / "home/.zshrc").write_text("# unchanged startup\n")
+    state = root / "home/.local/state/pinyintab"
+    state.mkdir(parents=True)
+    (state / "activation").write_text("startup\n")
     target = "aarch64-apple-darwin" if os.uname().sysname == "Darwin" else "x86_64-unknown-linux-gnu"
     name = f"pinyintab-{tag}-{target}"
     package = root / name
@@ -41,7 +44,7 @@ def fixture(root, *, tag="v0.6.0", bad_hash=False, fail_download=False,
     binary.write_text("#!/bin/sh\n" + ("[ \"$1\" != doctor ] || exit 1\n" if bad_doctor else "")
                       + f"echo 'PinyinTab {tag[1:]}'\n")
     binary.chmod(0o755)
-    for source in ["pinyintab.bash", "pinyintab.zsh", "keybindings.bash", "keybindings.zsh"]:
+    for source in ["pinyintab.bash", "pinyintab.zsh", "keybindings.bash", "keybindings.zsh", "activation.sh"]:
         shutil.copy2(PROJECT / "shell" / source, package / "shell" / source)
     shutil.copy2(PROJECT / "scripts/install-online.sh", package / "update.sh")
     shutil.copy2(PROJECT / "scripts/apply-update.sh", package / "apply-update.sh")
@@ -106,6 +109,7 @@ def run_case(label, *, current="0.5.1", success=True, changed=True, locked=False
         assert actual.strip() == f"PinyinTab {expected}", (label, actual)
         assert (prefix / "share/pinyintab/personal.toml").read_text() == "keep = true\n", label
         assert (root / "home/.zshrc").read_text() == "# unchanged startup\n", label
+        assert (root / "home/.local/state/pinyintab/activation").read_text() == "startup\n", label
         assert not list(scratch.iterdir()), (label, "download staging was not cleaned")
         assert not list(prefix.glob(".pinyintab-update.*")), (label, "transaction staging remains")
         if not locked:
@@ -113,6 +117,7 @@ def run_case(label, *, current="0.5.1", success=True, changed=True, locked=False
         if changed and success:
             assert (prefix / "share/pinyintab/update.sh").is_file(), label
             assert (prefix / "share/pinyintab/pinyintab.bash").read_bytes() == (PROJECT / "shell/pinyintab.bash").read_bytes()
+            assert (prefix / "share/pinyintab/activation.sh").read_bytes() == (PROJECT / "shell/activation.sh").read_bytes()
         else:
             assert (prefix / "share/pinyintab/pinyintab.bash").read_text() == "old integration\n", label
         assert not (root / "escape").exists(), label

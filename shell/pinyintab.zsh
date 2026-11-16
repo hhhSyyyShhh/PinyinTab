@@ -115,11 +115,53 @@ _pinyintab_zsh_complete() {
   return 0
 }
 
-ptab() {
+_pinyintab_enable() {
+  local command
+  if (( ! $+functions[compdef] )); then
+    autoload -Uz compinit
+    compinit -D || return 1
+  fi
+
+  _pinyintab_saved_comps=()
+  for command in "${_pinyintab_commands[@]}"; do
+    _pinyintab_saved_comps[$command]="${_comps[$command]-}"
+    compdef _pinyintab_zsh_complete "$command"
+  done
+
+  _pinyintab_saved_default="${_comps[-default-]-}"
+  _comps[-default-]=_pinyintab_zsh_complete
+  _pinyintab_saved_command="${_comps[-command-]-}"
+  _pinyintab_saved_redirect="${_comps[-redirect-]-}"
+  _comps[-command-]=_pinyintab_zsh_command
+  _comps[-redirect-]=_pinyintab_zsh_redirect
+  _pinyintab_zsh_install_keys
+  _pinyintab_active=1
+}
+
+_pinyintab_disable() {
   local command previous
+  for command in "${_pinyintab_commands[@]}"; do
+    compdef -d "$command"
+    previous="${_pinyintab_saved_comps[$command]-}"
+    [[ -n "$previous" ]] && compdef "$previous" "$command"
+  done
+
+  unset '_comps[-default-]'
+  [[ -n "$_pinyintab_saved_default" ]] && _comps[-default-]="$_pinyintab_saved_default"
+  unset '_comps[-command-]' '_comps[-redirect-]'
+  [[ -n "$_pinyintab_saved_command" ]] && _comps[-command-]="$_pinyintab_saved_command"
+  [[ -n "$_pinyintab_saved_redirect" ]] && _comps[-redirect-]="$_pinyintab_saved_redirect"
+  _pinyintab_zsh_restore_keys
+  _pinyintab_active=0
+}
+
+source "${${(%):-%x}:A:h}/activation.sh"
+
+ptab() {
+  local caller
   # Shell state commands accept no operands; reject typos before changing state.
   case "${1:-}" in
-    on|off|status|doctor|version|--version|-V)
+    off|status|doctor|version|--version|-V)
       if [[ $# -gt 1 ]]; then
         printf '%s\n' "error: $1 does not accept extra arguments" "Try 'ptab --help'." >&2
         return 2
@@ -129,60 +171,16 @@ ptab() {
 
   case "${1:-}" in
     on)
-      if (( _pinyintab_active )); then
-        echo "PinyinTab completion: already ON"
-        return 0
-      fi
-
-      if (( ! $+functions[compdef] )); then
-        autoload -Uz compinit
-        compinit
-      fi
-
-      _pinyintab_saved_comps=()
-      for command in "${_pinyintab_commands[@]}"; do
-        _pinyintab_saved_comps[$command]="${_comps[$command]-}"
-        compdef _pinyintab_zsh_complete "$command"
-      done
-
-      _pinyintab_saved_default="${_comps[-default-]-}"
-      _comps[-default-]=_pinyintab_zsh_complete
-      _pinyintab_saved_command="${_comps[-command-]-}"
-      _pinyintab_saved_redirect="${_comps[-redirect-]-}"
-      _comps[-command-]=_pinyintab_zsh_command
-      _comps[-redirect-]=_pinyintab_zsh_redirect
-      _pinyintab_zsh_install_keys
-      _pinyintab_active=1
-      echo "PinyinTab completion: ON"
-      ;;
-    off)
-      if (( ! _pinyintab_active )); then
-        echo "PinyinTab completion: already OFF"
-        return 0
-      fi
-
-      for command in "${_pinyintab_commands[@]}"; do
-        compdef -d "$command"
-        previous="${_pinyintab_saved_comps[$command]-}"
-        [[ -n "$previous" ]] && compdef "$previous" "$command"
-      done
-
-      unset '_comps[-default-]'
-      [[ -n "$_pinyintab_saved_default" ]] && _comps[-default-]="$_pinyintab_saved_default"
-      unset '_comps[-command-]' '_comps[-redirect-]'
-      [[ -n "$_pinyintab_saved_command" ]] && _comps[-command-]="$_pinyintab_saved_command"
-      [[ -n "$_pinyintab_saved_redirect" ]] && _comps[-redirect-]="$_pinyintab_saved_redirect"
-      _pinyintab_zsh_restore_keys
-      _pinyintab_active=0
-      echo "PinyinTab completion: OFF"
-      ;;
-    status)
-      if (( _pinyintab_active )); then
-        echo "PinyinTab completion: ON (Zsh)"
+      shift
+      caller="${funcfiletrace[1]-}"
+      if [[ $# == 0 ]] &&
+          _pinyintab_has_legacy_call "${caller%:*}" "${caller##*:}"; then
+        _pinyintab_legacy_on
       else
-        echo "PinyinTab completion: OFF (Zsh)"
-      fi
-      ;;
+        _pinyintab_policy_on "$@"
+      fi ;;
+    off) _pinyintab_policy_off ;;
+    status) _pinyintab_policy_status Zsh ;;
     doctor)
       "$_pinyintab_binary" doctor
       echo "shell: zsh ${ZSH_VERSION}"
@@ -205,3 +203,9 @@ ptab() {
       ;;
   esac
 }
+
+if [[ -o interactive ]]; then
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd _pinyintab_zsh_prompt_sync
+fi
+_pinyintab_sync

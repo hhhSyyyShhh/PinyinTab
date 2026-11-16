@@ -93,7 +93,7 @@ if ! binary_version="$("$binary" version 2>&1)"; then
     exit 1
 fi
 
-for integration in "$project_dir/shell/pinyintab.bash" "$project_dir/shell/pinyintab.zsh" \
+for integration in "$project_dir/shell/pinyintab.bash" "$project_dir/shell/pinyintab.zsh" "$project_dir/shell/activation.sh" \
     "$project_dir/shell/keybindings.bash" "$project_dir/shell/keybindings.zsh"; do
     if [[ ! -f "$integration" ]]; then
         echo "error: missing shell integration: $integration" >&2
@@ -108,6 +108,7 @@ install -d "$BIN_DIR" "$SHARE_DIR"
 install -m 755 "$binary" "$BIN_DIR/ptab"
 install -m 644 "$project_dir/shell/pinyintab.bash" "$SHARE_DIR/pinyintab.bash"
 install -m 644 "$project_dir/shell/pinyintab.zsh" "$SHARE_DIR/pinyintab.zsh"
+install -m 644 "$project_dir/shell/activation.sh" "$SHARE_DIR/activation.sh"
 install -m 644 "$project_dir/shell/keybindings.bash" "$SHARE_DIR/keybindings.bash"
 install -m 644 "$project_dir/shell/keybindings.zsh" "$SHARE_DIR/keybindings.zsh"
 install -m 755 "$project_dir/uninstall.sh" "$SHARE_DIR/uninstall.sh"
@@ -123,6 +124,14 @@ fi
 
 if [[ "$modify_shell" == 1 ]]; then
     touch "$rc_file"
+    # Preserve a previous explicit opt-in, including v0.6.1's managed block.
+    (
+        source "$SHARE_DIR/activation.sh"
+        if [[ "$enable_on_startup" == 1 ]] ||
+            { [[ ! -e "$_pinyintab_state_dir/activation" ]] && _pinyintab_legacy_line "$rc_file" 0; }; then
+            _pinyintab_write_policy startup
+        fi
+    )
     if [[ ! -e "$rc_file.pinyintab.bak" ]]; then
         cp "$rc_file" "$rc_file.pinyintab.bak"
     fi
@@ -141,9 +150,6 @@ if [[ "$modify_shell" == 1 ]]; then
     {
         printf '\n%s\n' "$START_MARKER"
         printf 'source "%s"\n' "$integration_file"
-        if [[ "$enable_on_startup" == 1 ]]; then
-            printf 'ptab on >/dev/null\n'
-        fi
         printf '%s\n' "$END_MARKER"
     } >>"$rc_file"
 fi
@@ -158,7 +164,7 @@ if [[ "$modify_shell" == 1 ]]; then
     if [[ "$enable_on_startup" == 1 ]]; then
         echo "  completion: enabled automatically in new shells"
     else
-        echo "  completion: disabled by default"
+        echo "  completion: off unless you saved an activation mode"
     fi
     echo
     echo "Restart the terminal, then enable completion when needed with:"

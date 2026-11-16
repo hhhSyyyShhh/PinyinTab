@@ -7,6 +7,7 @@ trap 'rm -rf -- "$temporary_root"' EXIT
 
 export HOME="$temporary_root/home"
 export PINYINTAB_INSTALL_ROOT="$HOME/.local"
+unset XDG_STATE_HOME
 mkdir -p "$HOME"
 printf '%s\n' 'export PINYINTAB_TEST_SETTING=preserved' >"$HOME/.bashrc"
 
@@ -30,6 +31,7 @@ status_in_clean_bash() {
 [[ -x "$HOME/.local/bin/ptab" ]] || fail "binary was not installed"
 [[ -f "$HOME/.local/share/pinyintab/pinyintab.bash" ]] || fail "Bash integration was not installed"
 [[ -f "$HOME/.local/share/pinyintab/keybindings.bash" ]] || fail "Bash keybindings were not installed"
+[[ -f "$HOME/.local/share/pinyintab/activation.sh" ]] || fail "activation helper was not installed"
 [[ -x "$HOME/.local/share/pinyintab/uninstall.sh" ]] || fail "installed uninstaller is missing"
 [[ -x "$HOME/.local/share/pinyintab/update.sh" ]] || fail "installed updater is missing"
 grep -Fq '# >>> PinyinTab >>>' "$HOME/.bashrc" || fail "managed startup block is missing"
@@ -46,17 +48,21 @@ fi
 [[ "$(grep -Fc '# >>> PinyinTab >>>' "$HOME/.bashrc")" == 1 ]] || {
     fail "managed startup block was duplicated"
 }
-grep -Fq 'ptab on >/dev/null' "$HOME/.bashrc" || fail "opt-in activation was not configured"
-[[ "$(status_in_clean_bash)" == 'PinyinTab completion: ON (Bash)' ]] || {
+[[ "$(status_in_clean_bash)" == 'PinyinTab completion: ON (Bash) [startup]' ]] || {
     fail "opt-in Bash session did not start with completion enabled"
 }
 
-# Reinstalling with the new default migrates v0.3-style auto-start blocks back
-# to opt-in behavior while preserving unrelated user configuration and backup.
+# Reinstalling removes legacy unconditional startup lines, but keeps a
+# preference explicitly saved by the user or installer.
 "$project_dir/install.sh" --shell bash >/dev/null
 if grep -Fq 'ptab on >/dev/null' "$HOME/.bashrc"; then
     fail "reinstall did not remove the previous automatic activation"
 fi
+[[ "$(status_in_clean_bash)" == 'PinyinTab completion: ON (Bash) [startup]' ]] ||
+    fail "reinstall lost the saved activation mode"
+bash --noprofile --norc -c 'source "$HOME/.bashrc"; ptab off >/dev/null'
+[[ "$(status_in_clean_bash)" == 'PinyinTab completion: OFF (Bash)' ]] ||
+    fail "off did not cancel startup activation"
 grep -Fq 'PINYINTAB_TEST_SETTING=preserved' "$HOME/.bashrc" || {
     fail "unrelated Bash configuration was not preserved"
 }
@@ -76,6 +82,7 @@ if grep -Fq '# >>> PinyinTab >>>' "$HOME/.bashrc"; then
     fail "uninstaller left the managed startup block behind"
 fi
 [[ ! -e "$HOME/.local/bin/ptab" ]] || fail "uninstaller left the binary behind"
+[[ ! -e "$HOME/.local/state/pinyintab/activation" ]] || fail "uninstaller left activation state behind"
 
 if command -v zsh >/dev/null 2>&1; then
     export HOME="$temporary_root/zsh-home"
@@ -91,7 +98,7 @@ if command -v zsh >/dev/null 2>&1; then
 
     "$project_dir/install.sh" --shell zsh --enable-on-startup >/dev/null
     zsh_status="$(zsh -f -c 'source "$HOME/.zshrc"; ptab status')"
-    [[ "$zsh_status" == 'PinyinTab completion: ON (Zsh)' ]] || {
+    [[ "$zsh_status" == 'PinyinTab completion: ON (Zsh) [startup]' ]] || {
         fail "opt-in Zsh session did not start with completion enabled"
     }
 

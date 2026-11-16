@@ -39,7 +39,7 @@ Shell 插入真实路径
 | 自更新 | `src/update.rs`、`scripts/install-online.sh`、`scripts/apply-update.sh` | 定位自身安装前缀，下载校验、暂存替换与失败回滚；不编辑启动配置 |
 | 安装与发布 | `install.sh`、`scripts/`、`.github/workflows/` | 用户级安装、卸载、构建归档、CI 与 GitHub Release |
 
-安装器默认只在 Shell 启动文件中加载管理函数，不自动开启补全。`ptab on` 是当前 Shell 的显式状态切换；只有 `--enable-on-startup` 会把自动启用命令写入托管配置块。
+安装器默认只在 Shell 启动文件中加载管理函数。普通 `ptab on` 只设置当前 Shell 的开关；`ptab on --until-reboot` 和 `ptab on --startup` 则通过 `shell/activation.sh` 记录共享策略。前者记录本次开机标识，标识不符时视为关闭；后者与安装选项 `--enable-on-startup` 等效。Shell 加载时和重新显示提示符前检查策略；共享状态记录按纯文本读取，不改写用户的启动文件。
 
 管理函数把帮助请求转交给同一二进制参考页。`ptab --help` 为英文，`ptab help zh` 为中文，`ptab help advanced [en|zh]` 显示底层协议。帮助写标准输出并返回 0；用法错误写标准错误并返回 2，不混入候选数据流。帮助请求不触发 `on/off`，有多余操作数的状态命令也会在改变状态前被拒绝。
 
