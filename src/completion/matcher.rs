@@ -2,7 +2,30 @@ use crate::NameMapper;
 
 /// Match either a direct prefix or a stem prefix with an exact extension.
 pub(super) fn candidate_matches(candidate: &str, typed: &str) -> bool {
-    if candidate.starts_with(typed) {
+    candidate_matches_with_case(candidate, typed, false)
+}
+
+/// Apply ASCII case folding only to aliases created by transliteration.
+/// Literal names still follow the case-sensitive comparison above.
+pub(super) fn pinyin_candidate_matches(alias: &str, real: &str, typed: &str) -> bool {
+    alias != real && candidate_matches_with_case(alias, typed, true)
+}
+
+pub(super) fn ascii_prefix(candidate: &str, typed: &str) -> bool {
+    candidate
+        .get(..typed.len())
+        .map_or(false, |prefix| prefix.eq_ignore_ascii_case(typed))
+}
+
+fn candidate_matches_with_case(candidate: &str, typed: &str, fold_ascii: bool) -> bool {
+    let starts_with = |name: &str, query: &str| {
+        if fold_ascii {
+            ascii_prefix(name, query)
+        } else {
+            name.starts_with(query)
+        }
+    };
+    if starts_with(candidate, typed) {
         return true;
     }
 
@@ -13,7 +36,12 @@ pub(super) fn candidate_matches(candidate: &str, typed: &str) -> bool {
         return false;
     };
 
-    candidate_extension == typed_extension && candidate_stem.starts_with(typed_stem)
+    let same_extension = if fold_ascii {
+        candidate_extension.eq_ignore_ascii_case(typed_extension)
+    } else {
+        candidate_extension == typed_extension
+    };
+    same_extension && starts_with(candidate_stem, typed_stem)
 }
 
 /// Match a real Chinese prefix followed by Pinyin for the remaining text.
@@ -44,9 +72,8 @@ pub(super) fn mixed_candidate_matches(mapper: &NameMapper, candidate: &str, type
 
         let candidate_remainder = &candidate[boundary..];
         let aliases = mapper.aliases(candidate_remainder);
-        let typed_pinyin = typed_remainder.to_ascii_lowercase();
-        if candidate_matches(&aliases.full, &typed_pinyin)
-            || candidate_matches(&aliases.initials, &typed_pinyin)
+        if pinyin_candidate_matches(&aliases.full, candidate_remainder, typed_remainder)
+            || pinyin_candidate_matches(&aliases.initials, candidate_remainder, typed_remainder)
         {
             return true;
         }
@@ -57,7 +84,7 @@ pub(super) fn mixed_candidate_matches(mapper: &NameMapper, candidate: &str, type
 
 #[cfg(test)]
 mod tests {
-    use super::{candidate_matches, mixed_candidate_matches};
+    use super::{candidate_matches, mixed_candidate_matches, pinyin_candidate_matches};
     use crate::NameMapper;
 
     #[test]
@@ -70,6 +97,19 @@ mod tests {
     fn compares_extensions_separately() {
         assert!(candidate_matches("jjcfb.py", "jj.py"));
         assert!(!candidate_matches("jiujiuchengfabiao.py", "jj.rs"));
+    }
+
+    #[test]
+    fn folds_ascii_case_only_for_transliterated_aliases() {
+        assert!(pinyin_candidate_matches("Cyuyan.c", "C语言.c", "cyu.C"));
+        assert!(!pinyin_candidate_matches("Cyuyan.c", "C语言.c", "cyu.rs"));
+        assert!(!pinyin_candidate_matches("lower.c", "lower.c", "LOW"));
+        assert!(!pinyin_candidate_matches("Cyuyan.c", "C语言.c", "C语"));
+        assert!(mixed_candidate_matches(
+            &NameMapper,
+            "C语言API.c",
+            "C语yanapi.c"
+        ));
     }
 
     #[test]

@@ -6,7 +6,9 @@ mod selection;
 
 pub use selection::CandidateLanguage;
 
-use crate::completion::matcher::{candidate_matches, mixed_candidate_matches};
+use crate::completion::matcher::{
+    candidate_matches, mixed_candidate_matches, pinyin_candidate_matches,
+};
 use crate::completion::path::{resolve_parent, split_typed_path};
 use crate::NameMapper;
 use std::fs;
@@ -118,14 +120,13 @@ pub fn complete_with_language(
         if typed_name.is_empty() && completion_name.starts_with('.') {
             continue;
         }
-        let typed_pinyin = typed_name.to_ascii_lowercase();
         if reverse_exact {
             if !selection::equivalent_name(typed_name, completion_name) {
                 continue;
             }
         } else if !candidate_matches(completion_name, typed_name)
-            && !candidate_matches(&aliases.full, &typed_pinyin)
-            && !candidate_matches(&aliases.initials, &typed_pinyin)
+            && !pinyin_candidate_matches(&aliases.full, completion_name, typed_name)
+            && !pinyin_candidate_matches(&aliases.initials, completion_name, typed_name)
             && !mixed_candidate_matches(&mapper, completion_name, typed_name)
         {
             continue;
@@ -222,6 +223,92 @@ mod tests {
         let matches = complete(root.path(), "t", EntryFilter::Directories).expect("completion");
         assert!(matches.contains(&"test/".to_owned()));
         assert!(matches.contains(&"图片/".to_owned()));
+    }
+
+    #[test]
+    fn mixed_case_pinyin_matrix_preserves_real_paths() {
+        let mut checks = 0;
+        for (real, full, initials) in [
+            ("C语言", "Cyuyan", "Cyy"),
+            ("Rust入门", "Rustrumen", "Rustrm"),
+            ("项目API", "xiangmuAPI", "xmAPI"),
+            ("README说明", "READMEshuoming", "READMEsm"),
+        ] {
+            for extension in ["c", "md", "tar.gz"] {
+                let fixture = TestDirectory::new("mixed-case-fixture");
+                let real_file = format!("{real}.{extension}");
+                let parent = fixture.path().join("Src资料");
+                fs::create_dir(&parent).unwrap();
+                fs::write(fixture.path().join(&real_file), []).unwrap();
+                fs::write(parent.join(&real_file), []).unwrap();
+                for alias in [full, initials] {
+                    for query in [
+                        alias.to_owned(),
+                        alias.to_ascii_lowercase(),
+                        alias.to_ascii_uppercase(),
+                    ] {
+                        for (typed_prefix, real_prefix) in
+                            [("", ""), ("./", "./"), ("srcziliao/", "Src资料/")]
+                        {
+                            for (suffix, extension_matches) in [
+                                (String::new(), true),
+                                (format!(".{extension}"), true),
+                                (String::from(".missing"), false),
+                            ] {
+                                for (filter, language, accepts_file) in [
+                                    (EntryFilter::Any, CandidateLanguage::Auto, true),
+                                    (EntryFilter::Files, CandidateLanguage::Chinese, true),
+                                    (EntryFilter::Any, CandidateLanguage::English, false),
+                                    (EntryFilter::Executables, CandidateLanguage::All, false),
+                                ] {
+                                    let typed = format!("{typed_prefix}{query}{suffix}");
+                                    let expected = if extension_matches && accepts_file {
+                                        vec![format!("{real_prefix}{real_file}")]
+                                    } else {
+                                        Vec::new()
+                                    };
+                                    assert_eq!(
+                                        complete_with_language(
+                                            fixture.path(),
+                                            &typed,
+                                            filter,
+                                            language
+                                        )
+                                        .unwrap(),
+                                        expected,
+                                        "{real_file}: {typed:?}, {filter:?}, {language:?}"
+                                    );
+                                    checks += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(checks, 2592);
+        println!("{checks} mixed-case candidate scenarios passed");
+    }
+
+    #[test]
+    fn mixed_case_executable_matches_without_selecting_source() {
+        let root = TestDirectory::new("mixed-case-c-executable");
+        fs::write(root.path().join("C语言.c"), []).unwrap();
+        let exe = root.path().join("C语言");
+        fs::write(&exe, []).unwrap();
+        fs::set_permissions(&exe, fs::Permissions::from_mode(0o755)).unwrap();
+        assert_eq!(
+            complete(root.path(), "./cyuyan", EntryFilter::Executables).unwrap(),
+            vec!["./C语言"]
+        );
+        assert_eq!(
+            complete(root.path(), "cyuyan.c", EntryFilter::Files).unwrap(),
+            vec!["C语言.c"]
+        );
+        assert_eq!(
+            complete(root.path(), "Cyuyan", EntryFilter::Files).unwrap(),
+            vec!["C语言", "C语言.c"]
+        );
     }
 
     #[test]

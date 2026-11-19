@@ -4,13 +4,15 @@
 
 | 系统 | CPU | 默认 Shell | 测试方式 |
 |---|---|---|---|
-| Ubuntu 22.04、24.04 | x86_64 / AMD64 | Bash | GitHub Actions Runner/容器 + Release 安装测试 |
-| CentOS Stream 9 | x86_64 / AMD64 | Bash | 官方容器 + Release 安装测试 |
+| Ubuntu 22.04、24.04 | x86_64 / AMD64 | Bash | 官方容器 + Release 安装与实际 Tab 测试 |
+| CentOS Stream 9 | x86_64 / AMD64 | Bash | 官方容器 + Release 安装与实际 Tab 测试 |
 | macOS 14 及更新版本 | Apple Silicon arm64 | Zsh | GitHub Actions M 系列 Runner + Zsh 回归脚本 |
 
 Linux Release 使用 `x86_64-unknown-linux-gnu`，要求 glibc 2.34 或更新版本。它通常也能运行在满足版本要求的 Debian、Fedora、RHEL、Rocky Linux、AlmaLinux 等 x86_64 发行版上，但未经 CI 验证的平台只标记为“预期可用”。Alpine 默认使用 musl；旧发行版可能缺少所需 glibc；ARM 服务器无法运行 x86_64 二进制。
 
 CentOS Linux 7/8 与 CentOS Stream 8 不满足当前运行时基线。CentOS 支持范围为 Stream 9 x86_64。
+
+Release 发布前使用同一个 Linux 安装包在上述三个容器中测试安装、命令诊断及 Bash 的默认和 Vi 插入模式补全。任一环境失败时，工作流不发布该安装包。
 
 ## 安装后的启用策略
 

@@ -1,3 +1,4 @@
+use crate::completion::matcher::ascii_prefix;
 use crate::NameMapper;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -62,7 +63,6 @@ fn append_component(prefix: &mut String, component: &str) {
 /// Resolve one Pinyin directory component only when the result is unique.
 fn resolve_directory_component(directory: &Path, typed: &str) -> std::io::Result<String> {
     let mapper = NameMapper;
-    let typed_pinyin = typed.to_ascii_lowercase();
     let mut exact_aliases = Vec::new();
     let mut prefix_aliases = Vec::new();
 
@@ -85,10 +85,12 @@ fn resolve_directory_component(directory: &Path, typed: &str) -> std::io::Result
         }
 
         let aliases = mapper.aliases(&real_name);
-        if aliases.full == typed_pinyin || aliases.initials == typed_pinyin {
+        let pinyin = [aliases.full.as_str(), aliases.initials.as_str()];
+        let transliterated = || pinyin.into_iter().filter(|alias| *alias != real_name);
+        if transliterated().any(|alias| alias.eq_ignore_ascii_case(typed)) {
             exact_aliases.push(real_name);
-        } else if aliases.full.starts_with(&typed_pinyin)
-            || aliases.initials.starts_with(&typed_pinyin)
+        } else if real_name.starts_with(typed)
+            || transliterated().any(|alias| ascii_prefix(alias, typed))
         {
             prefix_aliases.push(real_name);
         }

@@ -15,6 +15,11 @@ All notable changes to PinyinTab are documented here. The project follows Semant
 - Configurable polyphonic phrase dictionary.
 - Fish integration and additional release architectures.
 
+## [0.6.4] - 2026-11-19
+
+- Match Pinyin aliases for mixed Latin/Chinese files and directories without regard to ASCII case; keep the original path spelling, extensions and command-specific filters when completing.
+- Test mixed-case completion in 2,592 candidate scenarios and exercise Tab against the installed Linux archive before publishing on Ubuntu 22.04, Ubuntu 24.04 and CentOS Stream 9.
+
 ## [0.6.3] - 2026-11-16
 
 - Show update stages and a single-line progress bar during package downloads in interactive terminals.

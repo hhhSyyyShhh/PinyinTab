@@ -20,7 +20,8 @@ class Terminal:
     def __init__(self, shell, root, integration, binary, vi_mode=False):
         self.master, slave = pty.openpty()
         env = dict(os.environ, HOME=str(root), ZDOTDIR=str(root), TERM="xterm",
-                   PINYINTAB_BINARY=str(binary), LC_ALL="en_US.UTF-8")
+                   PINYINTAB_BINARY=str(binary),
+                   LC_ALL=os.environ.get("PINYINTAB_TEST_LOCALE", "en_US.UTF-8"))
         args = [shell, "-f", "-i"] if shell.endswith("zsh") else [shell, "--noprofile", "--norc", "-i"]
         if vi_mode and not shell.endswith("zsh"):
             args[-1:-1] = ["-o", "vi"]
@@ -78,6 +79,8 @@ def main():
     if not shell.endswith("zsh"):
         supported = subprocess.run([shell, "-c", "complete -p -I"], capture_output=True)
         if b"invalid option" in supported.stderr:
+            if os.environ.get("PINYINTAB_TEST_INTEGRATION"):
+                raise SystemExit("FAIL: installed archive Tab suite requires Bash 5+")
             print("SKIP: command-position Tab requires Bash 5+ (macOS ships Bash 3.2); test Zsh here")
             return
     with tempfile.TemporaryDirectory(prefix="pinyintab-interactive-") as name:
@@ -95,7 +98,10 @@ def main():
         (root / "图片").mkdir()
         suffix = "zsh" if shell.endswith("zsh") else "bash"
         vi_mode = "--vi" in sys.argv[2:]
-        terminal = Terminal(shell, root, project / "shell" / f"pinyintab.{suffix}", binary, vi_mode)
+        integration = Path(os.environ.get(
+            "PINYINTAB_TEST_INTEGRATION", project / "shell" / f"pinyintab.{suffix}"
+        )).resolve()
+        terminal = Terminal(shell, root, integration, binary, vi_mode)
         cases = [
             ("./yunxing", "./运行程序"),
             (f"../{root.name}/yunxing", f"../{root.name}/运行程序"),
@@ -127,6 +133,37 @@ def main():
             for typed, expected in cases:
                 actual = terminal.probe(typed)
                 assert actual == expected, f"{suffix}: {typed!r}: expected {expected!r}, got {actual!r}"
+            mixed = root / "Mixed资料"
+            mixed.mkdir()
+            (mixed / "C语言.c").write_text("/* source fixture, not executable */\n")
+            mixed_source_cases = [
+                "gcc mixedziliao/cyuyan", "gcc mixedzl/CYUYAN.C", "gcc Mixed资料/C语言",
+            ]
+            for typed in mixed_source_cases:
+                actual = terminal.probe(typed)
+                assert shlex.split(actual) == ["gcc", "Mixed资料/C语言.c"], (suffix, typed, actual)
+            executable = mixed / "C语言"
+            executable.write_text("#!/bin/sh\nprintf 'PTAB_NO_NEWLINE'\n")
+            executable.chmod(0o755)
+            mixed_collision_cases = [
+                ("gcc mixedziliao/cyuyan.c", ["gcc", "Mixed资料/C语言.c"]),
+                ("./mixedziliao/cyuyan", ["./Mixed资料/C语言"]),
+            ]
+            for typed, expected in mixed_collision_cases:
+                actual = terminal.probe(typed)
+                assert shlex.split(actual) == expected, (suffix, typed, actual)
+            no_newline_checks = 0
+            for mode in ("off", "on"):
+                terminal.send(f"ptab {mode}; printf '\\n__MIXED_%s__\\n' READY\n")
+                terminal.until(b"\r\n__MIXED_READY__\r\n")
+                # Verify actual program output after execution, including the
+                # boundary where the next prompt follows a missing newline.
+                terminal.until(b"ptab> ")
+                for _ in range(2):
+                    terminal.send("./Mixed资料/C语言\n")
+                    output = terminal.until(b"ptab> ")
+                    assert output.count(b"PTAB_NO_NEWLINE") == 1, (suffix, mode, output)
+                    no_newline_checks += 1
             spaced = terminal.probe("cat xiangmu")
             assert shlex.split(spaced) == ["cat", "项目 说明.txt"], repr(spaced)
             # Keep the four collision examples unambiguous. The earlier
@@ -184,7 +221,9 @@ def main():
             terminal.until(b"PinyinTab completion: OFF")
             assert terminal.probe("./yunxing") == "./yunxing", "off did not restore command completion"
             assert terminal.probe("\x18c") == "RESTORED_KEY", "off did not restore the selector key"
-            print(f"PASS: {suffix}{' vi-insert' if vi_mode else ''}: {len(cases) + len(selection_cases) + len(numbered_cases) + 6} real-terminal checks (Tab, language selection, quoting, execution, off)")
+            total = (len(cases) + len(selection_cases) + len(numbered_cases) + 6
+                     + len(mixed_source_cases) + len(mixed_collision_cases) + no_newline_checks)
+            print(f"PASS: {suffix}{' vi-insert' if vi_mode else ''}: {total} real-terminal checks (Tab, language selection, quoting, execution, off)")
         finally:
             terminal.close()
 

@@ -4,8 +4,9 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 archive="${1:-}"
-if [[ -z "$archive" || ! -f "$archive" ]]; then
-    echo "Usage: $0 <pinyintab-release.tar.gz>" >&2
+mode="${2:-}"
+if [[ -z "$archive" || ! -f "$archive" || ( -n "$mode" && "$mode" != --interactive ) || $# -gt 2 ]]; then
+    echo "Usage: $0 <pinyintab-release.tar.gz> [--interactive]" >&2
     exit 2
 fi
 
@@ -25,10 +26,17 @@ export PINYINTAB_INSTALL_ROOT="$HOME/.local"
 export PINYINTAB_RELEASE_FIXTURE="$temporary_root/fixture"
 mkdir -p "$HOME" "$PINYINTAB_RELEASE_FIXTURE"
 printf '%s\n' 'print("release archive test")' >"$PINYINTAB_RELEASE_FIXTURE/测试.py"
+printf '%s\n' 'int main(void) { return 0; }' >"$PINYINTAB_RELEASE_FIXTURE/C语言.c"
 printf '%s\n' '#!/bin/sh' 'printf "PTAB_RELEASE_EXEC_OK\n"' >"$PINYINTAB_RELEASE_FIXTURE/运行程序"
 chmod +x "$PINYINTAB_RELEASE_FIXTURE/运行程序"
 
 "$package_dir/install.sh" --shell bash >/dev/null
+installed_ptab="$PINYINTAB_INSTALL_ROOT/bin/ptab"
+version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' "$project_dir/Cargo.toml" | head -n 1)"
+[[ "$("$installed_ptab" version)" == "PinyinTab $version" ]] || {
+    echo "FAIL: installed archive version does not match Cargo.toml" >&2
+    exit 1
+}
 [[ -x "$HOME/.local/share/pinyintab/update.sh" && -f "$package_dir/apply-update.sh" ]] || {
     echo 'FAIL: release is missing update helpers' >&2
     exit 1
@@ -86,5 +94,22 @@ executable_candidate="$("$HOME/.local/bin/ptab" complete-command "$PINYINTAB_REL
     exit 1
 }
 (cd "$PINYINTAB_RELEASE_FIXTURE" && "$executable_candidate")
-"$HOME/.local/bin/ptab" doctor
+for query in cyuyan Cyuyan.c CYUYAN.C; do
+    mixed_candidate="$("$installed_ptab" complete-command --language auto "$PINYINTAB_RELEASE_FIXTURE" 1 gcc "$query")"
+    if [[ "$mixed_candidate" != C语言.c ]]; then
+        printf 'FAIL: mixed-case completion for %s returned %s\n' "$query" "$mixed_candidate" >&2
+        exit 1
+    fi
+done
+if [[ "$mode" == --interactive ]]; then
+    PINYINTAB_BINARY="$installed_ptab" \
+        PINYINTAB_TEST_INTEGRATION="$PINYINTAB_INSTALL_ROOT/share/pinyintab/pinyintab.bash" \
+        PINYINTAB_TEST_LOCALE=C.UTF-8 \
+        python3 "$project_dir/scripts/test-interactive.py" bash
+    PINYINTAB_BINARY="$installed_ptab" \
+        PINYINTAB_TEST_INTEGRATION="$PINYINTAB_INSTALL_ROOT/share/pinyintab/pinyintab.bash" \
+        PINYINTAB_TEST_LOCALE=C.UTF-8 \
+        python3 "$project_dir/scripts/test-interactive.py" bash --vi
+fi
+"$installed_ptab" doctor
 echo "PASS: PinyinTab release archive on $(uname -s) $(uname -m)"
