@@ -73,28 +73,10 @@ jobs:
           rustup target add x86_64-unknown-linux-gnu
       - name: Build Linux release archive
         run: ./scripts/package-release.sh x86_64-unknown-linux-gnu
-      - name: Test on Ubuntu 22.04 runner
+      - name: Test installed archive on Ubuntu 22.04, Ubuntu 24.04 and CentOS Stream 9
         run: >-
-          ./scripts/test-release-archive.sh
+          bash scripts/test-linux-release.sh
           "$(find dist -maxdepth 1 -name '*x86_64-unknown-linux-gnu.tar.gz' -print -quit)"
-      - name: Test on Ubuntu 24.04
-        run: |
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE:/workspace:ro" \
-            ubuntu:24.04 \
-            bash -lc '
-              archive=$(find /workspace/dist -maxdepth 1 -name "*x86_64-unknown-linux-gnu.tar.gz" -print -quit)
-              /workspace/scripts/test-release-archive.sh "$archive"
-            '
-      - name: Test on CentOS Stream 9
-        run: |
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE:/workspace:ro" \
-            quay.io/centos/centos:stream9 \
-            bash -lc '
-              archive=$(find /workspace/dist -maxdepth 1 -name "*x86_64-unknown-linux-gnu.tar.gz" -print -quit)
-              /workspace/scripts/test-release-archive.sh "$archive"
-            '
 
   quality:
     name: Rust formatting and lints

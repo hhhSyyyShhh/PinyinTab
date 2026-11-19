@@ -130,17 +130,17 @@ bash install-online.sh --enable-on-startup
 <summary>Apple 芯片 Mac 手动安装</summary>
 
 ```zsh
-shasum -a 256 -c pinyintab-v0.6.3-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c pinyintab-v0.6.4-aarch64-apple-darwin.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```zsh
-tar -xzf pinyintab-v0.6.3-aarch64-apple-darwin.tar.gz
+tar -xzf pinyintab-v0.6.4-aarch64-apple-darwin.tar.gz
 ```
 
 ```zsh
-cd pinyintab-v0.6.3-aarch64-apple-darwin
+cd pinyintab-v0.6.4-aarch64-apple-darwin
 ```
 
 ```zsh
@@ -153,17 +153,17 @@ bash install.sh
 <summary>Ubuntu / CentOS Stream 9 x86_64 手动安装</summary>
 
 ```bash
-sha256sum -c pinyintab-v0.6.3-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c pinyintab-v0.6.4-x86_64-unknown-linux-gnu.tar.gz.sha256
 ```
 
 必须显示 `OK`；否则不要解压安装。
 
 ```bash
-tar -xzf pinyintab-v0.6.3-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf pinyintab-v0.6.4-x86_64-unknown-linux-gnu.tar.gz
 ```
 
 ```bash
-cd pinyintab-v0.6.3-x86_64-unknown-linux-gnu
+cd pinyintab-v0.6.4-x86_64-unknown-linux-gnu
 ```
 
 ```bash

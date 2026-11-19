@@ -45,9 +45,24 @@ jobs:
             dist/*.sha256
           if-no-files-found: error
 
+  linux-compatibility:
+    name: Validate Linux release archive
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          name: x86_64-unknown-linux-gnu
+          path: release-assets
+      - name: Test only the archive destined for publishing
+        run: >-
+          bash scripts/test-linux-release.sh
+          "$(find release-assets -maxdepth 1 -name '*x86_64-unknown-linux-gnu.tar.gz' -print -quit)"
+
   publish:
     name: Publish GitHub Release
-    needs: build
+    needs: [build, linux-compatibility]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
